@@ -54,15 +54,21 @@ bool HelloWorld::init()
 	
 	components.AddComponent<TransformComponent>()->Initialize(entities, 1024);
 	components.AddUpdatableComponent<LifetimeComponent>()->Initialize(entities, 1024);
+	components.AddUpdatableComponent<VisualComponent>()->Initialize(entities, 1024, this);
 	
-	std::vector<std::type_index> archetype = {
+	// bind event
+	entities.AddEventListener(components.GetComponent<VisualComponent>().get());
+	
+	
+	Archetype archetype = {
 		typeid(TransformComponent),
 		typeid(LifetimeComponent),
+		typeid(VisualComponent),
 	};
 	Entity entity = components.CreateEntity(archetype);
 	auto lifetimeComponent = components.GetComponent<LifetimeComponent>();
 	auto handle = lifetimeComponent->GetHandle(entity);
-	lifetimeComponent->SetLifetime(handle, {10, 10});
+	lifetimeComponent->SetLifetime(handle, {0, 240});
 	
 	scheduleUpdate();
 	

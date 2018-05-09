@@ -72,12 +72,12 @@ namespace ecs2
 			}
 		}
 		
-		Entity CreateEntity(std::vector<std::type_index> archetypes)
+		Entity CreateEntity(const Archetype archetype)
 		{
 			Entity entity = m_EntityRegistry->Create();
 
-			for (auto archetype : archetypes)
-				AttachComponent(entity, archetype);
+			for (auto type : archetype)
+				AttachComponent(entity, type);
 
 			return entity;
 		}

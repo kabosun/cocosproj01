@@ -83,7 +83,7 @@ namespace ecs2
 			return h;
 		}
 		
-		ComponentHandle Attach(Entity entity)
+		ComponentHandle Attach(Entity entity) override
 		{
 			if (m_LUTable.count(entity.Id) == 0)
 			{

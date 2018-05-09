@@ -2,11 +2,14 @@
 
 #include <random>
 #include <vector>
+#include <typeindex>
 #include "Vector.h"
 
 namespace ecs2
 {
 	using EntityId = unsigned int;
+	
+	using Archetype = std::vector<std::type_index>;
 	
 	const unsigned ENTITY_INDEX_BITS = 22;
 	const unsigned ENTITY_INDEX_MASK = (1<<ENTITY_INDEX_BITS)-1;

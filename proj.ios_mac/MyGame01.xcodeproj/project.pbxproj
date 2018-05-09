@@ -75,6 +75,8 @@
 		CAE15A1220A334DD000C1C38 /* ExplodeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CAE15A0320A334DD000C1C38 /* ExplodeComponent.cpp */; };
 		CAE15A1320A334DD000C1C38 /* HealthComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CAE15A0720A334DD000C1C38 /* HealthComponent.cpp */; };
 		CAE15A1420A334DD000C1C38 /* HealthComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CAE15A0720A334DD000C1C38 /* HealthComponent.cpp */; };
+		CAE15A1720A33C02000C1C38 /* VisualComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CAE15A1520A33C02000C1C38 /* VisualComponent.cpp */; };
+		CAE15A1820A33C02000C1C38 /* VisualComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CAE15A1520A33C02000C1C38 /* VisualComponent.cpp */; };
 		D44C620C132DFF330009C878 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44C620B132DFF330009C878 /* OpenAL.framework */; };
 		D44C620E132DFF430009C878 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44C620D132DFF430009C878 /* AVFoundation.framework */; };
 		D44C6210132DFF4E0009C878 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44C620F132DFF4E0009C878 /* AudioToolbox.framework */; };
@@ -189,6 +191,8 @@
 		CAE15A0620A334DD000C1C38 /* ExplodeComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExplodeComponent.h; sourceTree = "<group>"; };
 		CAE15A0720A334DD000C1C38 /* HealthComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HealthComponent.cpp; sourceTree = "<group>"; };
 		CAE15A0820A334DD000C1C38 /* TransformComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransformComponent.h; sourceTree = "<group>"; };
+		CAE15A1520A33C02000C1C38 /* VisualComponent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = VisualComponent.cpp; sourceTree = "<group>"; };
+		CAE15A1620A33C02000C1C38 /* VisualComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VisualComponent.h; sourceTree = "<group>"; };
 		D44C620B132DFF330009C878 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		D44C620D132DFF430009C878 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		D44C620F132DFF4E0009C878 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -403,20 +407,22 @@
 		CAE159F920A334DC000C1C38 /* component */ = {
 			isa = PBXGroup;
 			children = (
-				CAE159FA20A334DD000C1C38 /* LifetimeComponent.h */,
 				CAE159FB20A334DD000C1C38 /* Facade.h */,
-				CAE159FC20A334DD000C1C38 /* RigidBodyComponent.cpp */,
-				CAE159FD20A334DD000C1C38 /* BallBehaviorComponent.h */,
-				CAE159FE20A334DD000C1C38 /* LifetimeComponent.cpp */,
-				CAE159FF20A334DD000C1C38 /* HealthComponent.h */,
-				CAE15A0020A334DD000C1C38 /* Physics.cpp */,
-				CAE15A0120A334DD000C1C38 /* BallBehaviorComponent.cpp */,
-				CAE15A0220A334DD000C1C38 /* RigidBodyComponent.h */,
-				CAE15A0320A334DD000C1C38 /* ExplodeComponent.cpp */,
 				CAE15A0520A334DD000C1C38 /* Physics.h */,
+				CAE15A0020A334DD000C1C38 /* Physics.cpp */,
+				CAE159FD20A334DD000C1C38 /* BallBehaviorComponent.h */,
+				CAE15A0120A334DD000C1C38 /* BallBehaviorComponent.cpp */,
+				CAE159FA20A334DD000C1C38 /* LifetimeComponent.h */,
+				CAE159FE20A334DD000C1C38 /* LifetimeComponent.cpp */,
+				CAE15A0220A334DD000C1C38 /* RigidBodyComponent.h */,
+				CAE159FC20A334DD000C1C38 /* RigidBodyComponent.cpp */,
 				CAE15A0620A334DD000C1C38 /* ExplodeComponent.h */,
+				CAE15A0320A334DD000C1C38 /* ExplodeComponent.cpp */,
+				CAE159FF20A334DD000C1C38 /* HealthComponent.h */,
 				CAE15A0720A334DD000C1C38 /* HealthComponent.cpp */,
 				CAE15A0820A334DD000C1C38 /* TransformComponent.h */,
+				CAE15A1620A33C02000C1C38 /* VisualComponent.h */,
+				CAE15A1520A33C02000C1C38 /* VisualComponent.cpp */,
 			);
 			path = component;
 			sourceTree = "<group>";
@@ -569,6 +575,7 @@
 				CAE15A0F20A334DD000C1C38 /* BallBehaviorComponent.cpp in Sources */,
 				CAE15A1320A334DD000C1C38 /* HealthComponent.cpp in Sources */,
 				CAE15A1120A334DD000C1C38 /* ExplodeComponent.cpp in Sources */,
+				CAE15A1720A33C02000C1C38 /* VisualComponent.cpp in Sources */,
 				503AE10117EB989F00D1A890 /* main.m in Sources */,
 				CAE15A0B20A334DD000C1C38 /* LifetimeComponent.cpp in Sources */,
 				CAE15A0920A334DD000C1C38 /* RigidBodyComponent.cpp in Sources */,
@@ -589,6 +596,7 @@
 				CAE15A0E20A334DD000C1C38 /* Physics.cpp in Sources */,
 				CAE15A0A20A334DD000C1C38 /* RigidBodyComponent.cpp in Sources */,
 				CAE15A0C20A334DD000C1C38 /* LifetimeComponent.cpp in Sources */,
+				CAE15A1820A33C02000C1C38 /* VisualComponent.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -8,14 +8,14 @@ void LifetimeComponent::Update(EntityRegistry& registry, float dt)
 	for (int i=0; i<Size(); i++)
 	{
 		Lifetime& lifetime = m_Data.Lifetime[i];
-		if (lifetime.Current <= 0)
+		if (lifetime.Current >= lifetime.Max)
 		{
 			// Destory Entity
 			registry.Remove(GetEntity(i));
 		}
 		else
 		{
-			lifetime.Current -= dt;
+			lifetime.Current++;
 		}
 	}
 }
