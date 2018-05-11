@@ -54,12 +54,13 @@ bool HelloWorld::init()
 	
 	components.AddComponent<TransformComponent>()->Initialize(entities, 1024);
 	components.AddUpdatableComponent<LifetimeComponent>()->Initialize(entities, 1024);
+	components.AddUpdatableComponent<SpawnerComponent>()->Initialize(entities, 1024);
 	components.AddUpdatableComponent<VisualComponent>()->Initialize(entities, 1024, this);
 	
 	// bind event
 	entities.AddEventListener(components.GetComponent<VisualComponent>().get());
 	
-	
+#if 0
 	Archetype archetype = {
 		typeid(TransformComponent),
 		typeid(LifetimeComponent),
@@ -69,6 +70,12 @@ bool HelloWorld::init()
 	auto lifetimeComponent = components.GetComponent<LifetimeComponent>();
 	auto handle = lifetimeComponent->GetHandle(entity);
 	lifetimeComponent->SetLifetime(handle, {0, 240});
+#else
+	Archetype archetype = {
+		typeid(SpawnerComponent),
+	};
+	components.CreateEntity(archetype);
+#endif
 	
 	scheduleUpdate();
 	

@@ -8,4 +8,5 @@
 #include "component/TransformComponent.h"
 #include "component/BallBehaviorComponent.h"
 #include "component/VisualComponent.h"
+#include "component/SpawnerComponent.h"
 

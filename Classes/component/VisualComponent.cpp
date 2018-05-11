@@ -16,7 +16,7 @@ void VisualComponent::OnCreate(int index)
 	DrawNode* node = DrawNode::create();
 	m_Data.DrawNode[index] = node;
 	
-	node->drawDot(Vec2::ZERO, 50, Color4F::YELLOW);
+	node->drawDot(Vec2::ZERO, 30, Color4F::YELLOW);
 	node->setPosition(Vec2(0, 0));
 	
 	m_Scene->addChild(node);

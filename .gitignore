@@ -1,5 +1,6 @@
 cocos2d/
 proj.*/
+CMakeLists.txt
 
 # Win
 Thumbs.db
