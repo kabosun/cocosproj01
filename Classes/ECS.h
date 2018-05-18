@@ -7,6 +7,6 @@
 #include "component/RigidBodyComponent.h"
 #include "component/TransformComponent.h"
 #include "component/BallBehaviorComponent.h"
-#include "component/VisualComponent.h"
 #include "component/SpawnerComponent.h"
 
+#include "render_component/VisualComponent.h"

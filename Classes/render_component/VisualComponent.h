@@ -14,7 +14,7 @@ struct _VisualComponent
 	std::vector<cocos2d::DrawNode*> DrawNode;
 };
 
-class VisualComponent : public Component, public IUpdatable, public IEntityEventListener
+class VisualComponent : public ecs2::Component, public IUpdatable, public IEntityEventListener
 {
 	_VisualComponent m_Data;
 	cocos2d::Node* m_Scene;
