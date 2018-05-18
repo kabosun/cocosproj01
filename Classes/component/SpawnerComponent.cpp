@@ -1,7 +1,7 @@
 #include "SpawnerComponent.h"
 #include "TransformComponent.h"
-#include "VisualComponent.h"
 #include "LifetimeComponent.h"
+#include "../render_component/VisualComponent.h"
 #include "../ecs/ComponentRegistry.h"
 
 void SpawnerComponent::OnCreate(int index)
@@ -31,7 +31,7 @@ void SpawnerComponent::Update(EntityRegistry& registry, float dt)
 				
 				float x = mt() % 100;
 				float y = mt() % 300;
-				Transform->SetPosition(handle, {x, y, 0});
+				Transform->SetPosition(handle, {x, y});
 			}
 			{
 				auto&& Lifetime = ComponentRegistry()->GetComponent<LifetimeComponent>();

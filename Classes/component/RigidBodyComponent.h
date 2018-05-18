@@ -13,8 +13,8 @@ class TransformComponent;
 struct _RigidBodyComponent
 {
 	// ユーザー定義
-	std::vector<Vector3f> Velocity;
-	std::vector<Vector3f> Acceleration;
+	std::vector<Vector2f> Velocity;
+	std::vector<Vector2f> Acceleration;
 	std::vector<float> Friction;
 };
 
@@ -46,22 +46,22 @@ public:
 	
 	void OnRemoveEntity(Entity entity) override;
 
-	Vector3f GetVelocity(ComponentHandle handle)
+	Vector2f GetVelocity(ComponentHandle handle)
 	{
 		return m_Data.Velocity[handle.index];
 	}
 
-	void SetVelocity(ComponentHandle handle, const Vector3f& velocity)
+	void SetVelocity(ComponentHandle handle, const Vector2f& velocity)
 	{
 		m_Data.Velocity[handle.index] = velocity;
 	}
 
-	Vector3f GetAcceleration(ComponentHandle handle)
+	Vector2f GetAcceleration(ComponentHandle handle)
 	{
 		return m_Data.Acceleration[handle.index];
 	}
 
-	void SetAcceleration(ComponentHandle handle, const Vector3f& acceleration)
+	void SetAcceleration(ComponentHandle handle, const Vector2f& acceleration)
 	{
 		m_Data.Acceleration[handle.index] = acceleration;
 	}
@@ -100,26 +100,26 @@ public:
 		this->component = component;
 	}
 	
-	Vector3f GetVelocity() const
+	Vector2f GetVelocity() const
 	{
 		ComponentHandle handle = component->GetHandle(entity);
 		return component->GetVelocity(handle);
 	}
 	
-	void SetVelocity(const Vector3f& velocity)
+	void SetVelocity(const Vector2f& velocity)
 	{
 		ComponentHandle handle = component->GetHandle(entity);
 		auto&& value = component->GetVelocity(handle);
 		value = velocity;
 	}
 	
-	Vector3f GetAcceleration() const
+	Vector2f GetAcceleration() const
 	{
 		ComponentHandle handle = component->GetHandle(entity);
 		return component->GetAcceleration(handle);
 	}
 	
-	void SetAcceleration(const Vector3f& acceleration)
+	void SetAcceleration(const Vector2f& acceleration)
 	{
 		ComponentHandle handle = component->GetHandle(entity);
 		component->SetAcceleration(handle, acceleration);

@@ -13,8 +13,8 @@ void Physics::Update(float dt)
 {
 	for (int i=0; i<m_Size; i++)
 	{
-		Vector3f& velocity = Velocity[i];
-		Vector3f& accelaration = Acceleration[i];
+		Vector2f& velocity = Velocity[i];
+		Vector2f& accelaration = Acceleration[i];
 		Velocity[i] *= Friction[i];
 		
 		velocity += accelaration * dt;

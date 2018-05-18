@@ -10,9 +10,9 @@ using namespace ecs2;
 struct _TransformComponent
 {
 	// ユーザー定義
-	std::vector<Vector3f> Position;
+	std::vector<Vector2f> Position;
 	std::vector<float> Rotation;
-	std::vector<Vector3f> Scale;
+	std::vector<Vector2f> Scale;
 };
 
 class TransformComponent : public ecs2::Component, public IEntityEventListener
@@ -35,12 +35,12 @@ public:
 	void OnRemoveEntity(Entity entity) override
 	{}
 
-	Vector3f GetPosition(ComponentHandle handle) const
+	Vector2f GetPosition(ComponentHandle handle) const
 	{
 		return m_Data.Position[handle.index];
 	}
 	
-	void SetPosition(ComponentHandle handle, const Vector3f& position)
+	void SetPosition(ComponentHandle handle, const Vector2f& position)
 	{
 		m_Data.Position[handle.index] = position;
 	}
@@ -55,12 +55,12 @@ public:
 		m_Data.Rotation[handle.index] = rotation;
 	}
 
-	Vector3f GetScale(ComponentHandle handle) const
+	Vector2f GetScale(ComponentHandle handle) const
 	{
 		return m_Data.Scale[handle.index];
 	}
 	
-	void SetScale(ComponentHandle handle, const Vector3f& scale)
+	void SetScale(ComponentHandle handle, const Vector2f& scale)
 	{
 		m_Data.Scale[handle.index] = scale;
 	}
@@ -90,12 +90,12 @@ public:
 		this->handle = component->GetHandle(entity);
 	}
 
-	Vector3f GetPosition() const
+	Vector2f GetPosition() const
 	{
 		return component->GetPosition(handle);
 	}
 
-	TransformFacade& SetPosition(const Vector3f& position)
+	TransformFacade& SetPosition(const Vector2f& position)
 	{
 		component->SetPosition(handle, position);
 		return *this;
@@ -112,12 +112,12 @@ public:
 		return *this;
 	}
 
-	Vector3f GetScale() const
+	Vector2f GetScale() const
 	{
 		return component->GetScale(handle);
 	}
 
-	TransformFacade& SetScale(const Vector3f& scale)
+	TransformFacade& SetScale(const Vector2f& scale)
 	{
 		component->SetScale(handle, scale);
 		return *this;

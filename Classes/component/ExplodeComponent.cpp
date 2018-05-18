@@ -25,6 +25,6 @@ void ExplodeComponent::OnRemoveEntity(Entity entity)
 	auto position = m_TransformComponent->GetPosition(handle);
 
 	// entityがなくなったら爆発エフェクトを発生させる
-	std::cout << "ExplodeComponentSystem. Emit Explode Perticle. ID:" << entity.Index() << "(" << entity.Generation() << ") X:" << position.X << " Y:" << position.Y << " Z:" << position.Z << std::endl;
+	std::cout << "ExplodeComponentSystem. Emit Explode Perticle. ID:" << entity.Index() << "(" << entity.Generation() << ") X:" << position.X << " Y:" << position.Y << std::endl;
 }
 
