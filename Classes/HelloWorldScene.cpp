@@ -52,9 +52,14 @@ bool HelloWorld::init()
     // 3. add your codes below...
 	components.Initialize(&entities);
 	
-	components.AddComponent<TransformComponent>()->Initialize(entities, 1024);
+	auto&& transformComponent = components.AddComponent<TransformComponent>();
+	transformComponent->Initialize(entities, 1024);
 	components.AddUpdatableComponent<LifetimeComponent>()->Initialize(entities, 1024);
 	components.AddUpdatableComponent<SpawnerComponent>()->Initialize(entities, 1024);
+	auto&& moveComponent = components.AddUpdatableComponent<MoveComponent>();
+	moveComponent->Initialize(entities, 1024);
+	moveComponent->SetSharedComponent(transformComponent.get());
+
 	components.AddUpdatableComponent<VisualComponent>()->Initialize(entities, 1024, this);
 	
 	// bind event

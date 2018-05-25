@@ -68,6 +68,11 @@ public:
 protected:
 	void Reset(int index) override
 	{
+		m_Data.Position[index].X = 0;
+		m_Data.Position[index].Y = 0;
+		m_Data.Rotation[index] = 0;
+		m_Data.Scale[index].X = 1;
+		m_Data.Scale[index].Y = 1;
 	}
 	
 	void Compact(int index, int lastIndex) override

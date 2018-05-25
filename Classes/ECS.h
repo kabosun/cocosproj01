@@ -7,5 +7,6 @@
 #include "component/RigidBodyComponent.h"
 #include "component/TransformComponent.h"
 #include "component/SpawnerComponent.h"
+#include "component/MoveComponent.h"
 
 #include "render_component/VisualComponent.h"

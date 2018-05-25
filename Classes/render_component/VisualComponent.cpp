@@ -52,9 +52,6 @@ void VisualComponent::Update(EntityRegistry& registry, float dt)
 
 				m_Data.DrawNode[i]->setScale(1 - life.Current * 1.0f / life.Max);
 			}
-			
-			position.X += 100 * dt;
-			transform->SetPosition(handle, position);
 		}
 	}
 }

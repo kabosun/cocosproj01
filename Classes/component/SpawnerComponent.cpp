@@ -1,6 +1,7 @@
 #include "SpawnerComponent.h"
 #include "TransformComponent.h"
 #include "LifetimeComponent.h"
+#include "MoveComponent.h"
 #include "../render_component/VisualComponent.h"
 #include "../ecs/ComponentRegistry.h"
 
@@ -21,6 +22,7 @@ void SpawnerComponent::Update(EntityRegistry& registry, float dt)
 			Archetype archetype = {
 				typeid(TransformComponent),
 				typeid(LifetimeComponent),
+				typeid(MoveComponent),
 				typeid(VisualComponent),
 			};
 			
