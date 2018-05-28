@@ -9,7 +9,7 @@
 namespace ecs2
 {
 	
-	static const int MINIMUM_FREE_INDICES = 32;
+	static const int MINIMUM_FREE_INDICES = 1024;
 
 	class IEntityEventListener
 	{
@@ -107,7 +107,7 @@ namespace ecs2
 				// 削除イベントを通知する
 				SendRemoveEntityEvent(entity);
 				
-				std::cout << "Destory Entity " << index << std::endl;
+//				std::cout << "Destory Entity " << index << std::endl;
 			}
 		}
 	};

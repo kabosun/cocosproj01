@@ -52,35 +52,25 @@ bool HelloWorld::init()
     // 3. add your codes below...
 	components.Initialize(&entities);
 	
+	const int maxSize = 1024 * 2;
+	
 	auto&& transformComponent = components.AddComponent<TransformComponent>();
-	transformComponent->Initialize(entities, 1024);
-	components.AddUpdatableComponent<LifetimeComponent>()->Initialize(entities, 1024);
-	components.AddUpdatableComponent<SpawnerComponent>()->Initialize(entities, 1024);
+	transformComponent->Initialize(entities, maxSize);
+	components.AddUpdatableComponent<SpawnerComponent>()->Initialize(entities, maxSize);
 	auto&& moveComponent = components.AddUpdatableComponent<MoveComponent>();
-	moveComponent->Initialize(entities, 1024);
+	moveComponent->Initialize(entities, maxSize);
 	moveComponent->SetSharedComponent(transformComponent.get());
 
-	components.AddUpdatableComponent<VisualComponent>()->Initialize(entities, 1024, this);
+	components.AddUpdatableComponent<VisualComponent>()->Initialize(entities, maxSize, this);
+	components.AddUpdatableComponent<LifetimeComponent>()->Initialize(entities, maxSize);
 	
 	// bind event
 	entities.AddEventListener(components.GetComponent<VisualComponent>().get());
 	
-#if 0
-	Archetype archetype = {
-		typeid(TransformComponent),
-		typeid(LifetimeComponent),
-		typeid(VisualComponent),
-	};
-	Entity entity = components.CreateEntity(archetype);
-	auto lifetimeComponent = components.GetComponent<LifetimeComponent>();
-	auto handle = lifetimeComponent->GetHandle(entity);
-	lifetimeComponent->SetLifetime(handle, {0, 240});
-#else
 	Archetype archetype = {
 		typeid(SpawnerComponent),
 	};
 	components.CreateEntity(archetype);
-#endif
 	
 	scheduleUpdate();
 	

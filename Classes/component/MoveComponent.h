@@ -32,6 +32,8 @@ public:
 	}
 
 	void Update(EntityRegistry& registry, float dt) override;
+	
+	void GC(const EntityRegistry& registry) override;
 
 protected:
 	void Reset(int index) override;

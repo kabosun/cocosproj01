@@ -26,19 +26,22 @@ void SpawnerComponent::Update(EntityRegistry& registry, float dt)
 				typeid(VisualComponent),
 			};
 			
-			Entity entity = ComponentRegistry()->CreateEntity(archetype);
+			for (int a=0; a<m_Data.SpawnCount[i]; a++)
 			{
-				auto&& Transform = ComponentRegistry()->GetComponent<TransformComponent>();
-				auto handle = Transform->GetHandle(entity);
-				
-				float x = mt() % 100;
-				float y = mt() % 300;
-				Transform->SetPosition(handle, {x, y});
-			}
-			{
-				auto&& Lifetime = ComponentRegistry()->GetComponent<LifetimeComponent>();
-				auto handle = Lifetime->GetHandle(entity);
-				Lifetime->SetLifetime(handle, {0, 300});
+				Entity entity = ComponentRegistry()->CreateEntity(archetype);
+				{
+					auto&& Transform = ComponentRegistry()->GetComponent<TransformComponent>();
+					auto handle = Transform->GetHandle(entity);
+					
+					float x = mt() % 100;
+					float y = mt() % 300;
+					Transform->SetPosition(handle, {x, y});
+				}
+				{
+					auto&& Lifetime = ComponentRegistry()->GetComponent<LifetimeComponent>();
+					auto handle = Lifetime->GetHandle(entity);
+					Lifetime->SetLifetime(handle, {0, 256});
+				}
 			}
 		}
 		else

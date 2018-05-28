@@ -37,6 +37,7 @@ public:
 
 	Vector2f GetPosition(ComponentHandle handle) const
 	{
+		assert(handle.index >= 0 && handle.index < m_Data.Position.size());
 		return m_Data.Position[handle.index];
 	}
 	
@@ -47,6 +48,7 @@ public:
 
 	float GetRotation(ComponentHandle handle) const
 	{
+		assert(handle.index >= 0);
 		return m_Data.Rotation[handle.index];
 	}
 	
@@ -70,7 +72,7 @@ protected:
 	{
 		m_Data.Position[index].X = 0;
 		m_Data.Position[index].Y = 0;
-		m_Data.Rotation[index] = 0;
+		m_Data.Rotation[index] = (float)(mt() % 360) / 360 * M_2_PI;
 		m_Data.Scale[index].X = 1;
 		m_Data.Scale[index].Y = 1;
 	}

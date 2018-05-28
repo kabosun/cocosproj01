@@ -54,6 +54,27 @@ namespace ecs2
 			return m_ComponentRegistry;
 		}
 		
+		// GCされたコンポーネントを削除します
+		void Remove(int index)
+		{
+			int lastIndex = m_Entity.size() - 1;
+			Entity entity = m_Entity[index];
+			Entity lastEntity = m_Entity[lastIndex];
+			
+			// 削除したentityの位置に最後のコンポーネントをコピーする
+			m_Entity.remove(index);
+			Reset(index);
+			Compact(index, lastIndex);
+			
+			m_LUTable[lastEntity.Id] = index;
+			m_LUTable.erase(entity.Id);
+			
+			if (entity.Id == 10)
+			{
+				printf("Remove index:%d\n", index);
+			}
+		}
+		
 	public:
 		virtual ~Component()
 		{}
@@ -79,12 +100,21 @@ namespace ecs2
 		
 		ComponentHandle GetHandle(Entity entity)
 		{
+			if (m_LUTable.count(entity.Id) == 0)
+			{
+				printf("index:%d gen:%d\n", entity.Index(), entity.Generation());
+				assert(false);
+				return {-1};
+			}
+			
 			ComponentHandle h = {m_LUTable[entity.Id]};
 			return h;
 		}
 		
 		ComponentHandle Attach(Entity entity) override
 		{
+			assert(m_LUTable.count(entity.Id) == 0);
+			
 			if (m_LUTable.count(entity.Id) == 0)
 			{
 				auto n = m_Entity.size();
@@ -122,23 +152,6 @@ namespace ecs2
 				// entityが死んでいたらコンポーネントも削除する
 				Remove(n);
 			}
-		}
-		
-	private:
-		// GCされたコンポーネントを削除します
-		void Remove(int index)
-		{
-			int lastIndex = m_Entity.size() - 1;
-			Entity entity = m_Entity[index];
-			Entity lastEntity = m_Entity[lastIndex];
-			
-			// 削除したentityの位置に最後のコンポーネントをコピーする
-			m_Entity.remove(index);
-			Reset(index);
-			Compact(index, lastIndex);
-			
-			m_LUTable[lastEntity.Id] = index;
-			m_LUTable.erase(entity.Id);
 		}
 	};
 

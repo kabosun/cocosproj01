@@ -12,6 +12,7 @@ struct _SpawnerComponent
 {
 	// ユーザー定義
 	std::vector<MaxValue<int>> SpawnFrame;
+	std::vector<int> SpawnCount;
 };
 
 class SpawnerComponent : public Component, public IUpdatable, public IEntityEventListener
@@ -24,6 +25,7 @@ public:
 		Component::Initialize(registry, maxSize);
 		
 		m_Data.SpawnFrame.resize(maxSize);
+		m_Data.SpawnCount.resize(maxSize);
 	}
 	
 	void OnCreate(int index) override;
@@ -39,7 +41,8 @@ protected:
 	void Reset(int index) override
 	{
 		m_Data.SpawnFrame[index].Current = 0;
-		m_Data.SpawnFrame[index].Max = 60;
+		m_Data.SpawnFrame[index].Max = 1;
+		m_Data.SpawnCount[index] = 4;
 	}
 	
 	void Compact(int index, int lastIndex) override
