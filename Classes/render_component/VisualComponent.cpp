@@ -6,9 +6,8 @@
 //
 
 #include "VisualComponent.h"
-#include "../component/TransformComponent.h"
-#include "../component/LifetimeComponent.h"
 #include "../ecs/ComponentRegistry.h"
+#include "../component/TransformComponent.h"
 
 USING_NS_CC;
 
@@ -34,26 +33,15 @@ void VisualComponent::OnRemoveEntity(Entity entity)
 
 void VisualComponent::Update(EntityRegistry& registry, float dt)
 {
-	auto transform = ComponentRegistry()->GetComponent<TransformComponent>();
-	auto lifetime = ComponentRegistry()->GetComponent<LifetimeComponent>();
-	
 	for (int i=0; i<Size(); i++)
 	{
 		Entity entity = GetEntity(i);
 		if (registry.Alive(entity))
 		{
-			auto handle = transform->GetHandle(entity);
-			auto position = transform->GetPosition(handle);
+			auto handle = Transform->GetHandle(entity);
+			auto position = Transform->GetPosition(handle);
 			
 			m_Data.Sprite[i]->setPosition(position.X, position.Y);
-
-			if (lifetime != nullptr)
-			{
-				auto handle = lifetime->GetHandle(entity);
-				auto life = lifetime->GetLifetime(handle);
-
-				m_Data.Sprite[i]->setScale(life.Current * 1.0f / life.Max * 3);
-			}
 		}
 	}
 }

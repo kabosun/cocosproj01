@@ -67,12 +67,15 @@ bool HelloWorld::init()
 	auto&& leftComponent = components.AddUpdatableComponent<LeftComponent>();
 	leftComponent->Initialize(entities, maxSize);
 	leftComponent->SetSharedComponent(transformComponent.get());
-
-	components.AddUpdatableComponent<VisualComponent>()->Initialize(entities, maxSize, this);
+	
 	components.AddUpdatableComponent<LifetimeComponent>()->Initialize(entities, maxSize);
+
+	auto&& visualComponent = components.AddUpdatableComponent<VisualComponent>();
+	visualComponent->Initialize(entities, maxSize, this);
+	visualComponent->SetSharedComponent(transformComponent.get());
 	
 	// bind event
-	entities.AddEventListener(components.GetComponent<VisualComponent>().get());
+	entities.AddEventListener(visualComponent.get());
 	
 	Archetype archetype = {
 		typeid(SpawnerComponent),

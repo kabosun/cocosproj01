@@ -7,6 +7,8 @@
 
 using namespace ecs2;
 
+class TransformComponent;
+
 // コンポーネント
 struct _VisualComponent
 {
@@ -18,6 +20,7 @@ class VisualComponent : public ecs2::Component, public IUpdatable, public IEntit
 {
 	_VisualComponent m_Data;
 	cocos2d::Node* m_Scene;
+	TransformComponent* Transform;
 	
 public:
 	void Initialize(EntityRegistry& registry, int maxSize, cocos2d::Node* scene)
@@ -27,6 +30,11 @@ public:
 		m_Data.Sprite.resize(maxSize);
 		
 		m_Scene = scene;
+	}
+	
+	void SetSharedComponent(TransformComponent* transform)
+	{
+		Transform = transform;
 	}
 	
 	void OnCreate(int index) override;
