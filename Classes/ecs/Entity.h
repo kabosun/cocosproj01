@@ -54,7 +54,7 @@ namespace ecs2
 	template<typename T>
 	class PackedArray
 	{
-		size_t m_Size = 0;
+		int m_Size = 0;
 		std::vector<T> m_Data;
 
 	public:
@@ -71,7 +71,7 @@ namespace ecs2
 
 		void remove(int index)
 		{
-			int lastIndex = m_Size - 1;
+			auto lastIndex = m_Size - 1;
 			m_Data[index] = m_Data[lastIndex];
 
 			--m_Size;

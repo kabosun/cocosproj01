@@ -19,8 +19,8 @@ void MoveComponent::Update(EntityRegistry& registry, float dt)
 
 		Transform->SetPosition(handle, position);
 		
-		// 回転する
-		Transform->SetRotation(handle, rotation + (dt * 180.f / 360 * M_2_PI));
+		// 左へ
+		//Transform->SetRotation(handle, rotation - (dt * 180.f / 360 * M_2_PI));
 	}
 }
 
@@ -37,7 +37,7 @@ void MoveComponent::GC(const EntityRegistry& registry)
 
 void MoveComponent::Reset(int index)
 {
-	m_Data.Speed[index] = 100;
+	m_Data.Speed[index] = 300;
 }
 
 void MoveComponent::Compact(int index, int lastIndex)

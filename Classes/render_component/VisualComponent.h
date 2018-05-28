@@ -11,7 +11,6 @@ using namespace ecs2;
 struct _VisualComponent
 {
 	// ユーザー定義
-//	std::vector<cocos2d::DrawNode*> DrawNode;
 	std::vector<cocos2d::Sprite*> Sprite;
 };
 
@@ -25,7 +24,6 @@ public:
 	{
 		Component::Initialize(registry, maxSize);
 		
-//		m_Data.DrawNode.resize(maxSize);
 		m_Data.Sprite.resize(maxSize);
 		
 		m_Scene = scene;
@@ -43,13 +41,11 @@ public:
 protected:
 	void Reset(int index) override
 	{
-//		m_Data.DrawNode[index] = nullptr;
 		m_Data.Sprite[index] = nullptr;
 	}
 	
 	void Compact(int index, int lastIndex) override
 	{
-//		m_Data.DrawNode[index] = m_Data.DrawNode[lastIndex];
 		m_Data.Sprite[index] = m_Data.Sprite[lastIndex];
 	}
 };

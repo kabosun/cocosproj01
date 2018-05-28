@@ -2,6 +2,7 @@
 #include "TransformComponent.h"
 #include "LifetimeComponent.h"
 #include "MoveComponent.h"
+#include "LeftComponent.h"
 #include "../render_component/VisualComponent.h"
 #include "../ecs/ComponentRegistry.h"
 
@@ -19,12 +20,14 @@ void SpawnerComponent::Update(EntityRegistry& registry, float dt)
 		{
 			m_Data.SpawnFrame[i].Current = 0;
 			
-			Archetype archetype = {
-				typeid(TransformComponent),
-				typeid(LifetimeComponent),
-				typeid(MoveComponent),
-				typeid(VisualComponent),
-			};
+//			Archetype archetype = {
+//				typeid(TransformComponent),
+//				typeid(LifetimeComponent),
+//				typeid(MoveComponent),
+//				typeid(LeftComponent),
+//				typeid(VisualComponent),
+//			};
+			Archetype archetype = m_Data.Archetype[i];
 			
 			for (int a=0; a<m_Data.SpawnCount[i]; a++)
 			{
@@ -33,8 +36,8 @@ void SpawnerComponent::Update(EntityRegistry& registry, float dt)
 					auto&& Transform = ComponentRegistry()->GetComponent<TransformComponent>();
 					auto handle = Transform->GetHandle(entity);
 					
-					float x = mt() % 100;
-					float y = mt() % 300;
+					float x = mt() % 100 + 100;
+					float y = mt() % 100 + 200;
 					Transform->SetPosition(handle, {x, y});
 				}
 				{
@@ -49,4 +52,9 @@ void SpawnerComponent::Update(EntityRegistry& registry, float dt)
 			m_Data.SpawnFrame[i].Current++;
 		}
 	}
+}
+
+void SpawnerComponent::SetArchetype(ComponentHandle handle, Archetype archetype)
+{
+	m_Data.Archetype[handle.index] = archetype;
 }

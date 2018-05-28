@@ -72,7 +72,7 @@ protected:
 	{
 		m_Data.Position[index].X = 0;
 		m_Data.Position[index].Y = 0;
-		m_Data.Rotation[index] = (float)(mt() % 360) / 360 * M_2_PI;
+		m_Data.Rotation[index] = M_PI_2;
 		m_Data.Scale[index].X = 1;
 		m_Data.Scale[index].Y = 1;
 	}

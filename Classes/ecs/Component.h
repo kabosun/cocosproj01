@@ -68,11 +68,6 @@ namespace ecs2
 			
 			m_LUTable[lastEntity.Id] = index;
 			m_LUTable.erase(entity.Id);
-			
-			if (entity.Id == 10)
-			{
-				printf("Remove index:%d\n", index);
-			}
 		}
 		
 	public:
@@ -98,7 +93,7 @@ namespace ecs2
 			return m_Entity[index];
 		}
 		
-		ComponentHandle GetHandle(Entity entity)
+		ComponentHandle GetHandle(Entity entity) const
 		{
 			if (m_LUTable.count(entity.Id) == 0)
 			{
@@ -107,8 +102,13 @@ namespace ecs2
 				return {-1};
 			}
 			
-			ComponentHandle h = {m_LUTable[entity.Id]};
+			ComponentHandle h = {m_LUTable.at(entity.Id)};
 			return h;
+		}
+		
+		bool HasComponent(Entity entity) const
+		{
+			return (m_LUTable.count(entity.Id) > 0);
 		}
 		
 		ComponentHandle Attach(Entity entity) override
