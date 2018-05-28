@@ -89,6 +89,7 @@ bool HelloWorld::init()
 		};
 		spawnComponent->SetArchetype(handle, archetype);
 	}
+#if 0
 	{
 		Entity entity = components.CreateEntity(archetype);
 		auto handle = spawnComponent->GetHandle(entity);
@@ -101,6 +102,7 @@ bool HelloWorld::init()
 		};
 		spawnComponent->SetArchetype(handle, archetype);
 	}
+#endif
 	
 	scheduleUpdate();
 	
