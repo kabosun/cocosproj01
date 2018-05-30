@@ -13,7 +13,8 @@ USING_NS_CC;
 
 void VisualComponent::OnCreate(int index)
 {
-	Sprite* sprite = Sprite::create("mon_001r.png", Rect(6, 6, 18, 17));
+//	Sprite* sprite = Sprite::create("mon_001r.png", Rect(6, 6, 18, 17));
+	Sprite* sprite = Sprite::create("TileA1.png", Rect(0, 0, 32, 32));
 	m_Data.Sprite[index] = sprite;
 	m_Scene->addChild(sprite);
 }
