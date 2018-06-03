@@ -47,10 +47,46 @@ bool HelloWorld::init()
     auto menu = Menu::create(closeItem, NULL);
     menu->setPosition(Vec2::ZERO);
     this->addChild(menu, 1);
+	
+	mode = Mode::Dig;
+	textMode = Label::createWithSystemFont("Dig", "HiraKakuProN-W6", 24);
+	textMode->setPosition(Point(820, 520));
+	textMode->setAnchorPoint({0, 1});
+	this->addChild(textMode);
 
     /////////////////////////////
     // 3. add your codes below...
 	input.Reset();
+	
+	// キーイベント
+	auto listener = EventListenerKeyboard::create();
+	listener->onKeyPressed = [this]( cocos2d::EventKeyboard::KeyCode keyCode , cocos2d::Event* keyEvent ) {
+		switch (keyCode)
+		{
+			case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+				input.KeyPress(1);
+				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+				input.KeyPress(2);
+				break;
+			default:
+				break;
+		}
+	};
+	listener->onKeyReleased= [this]( cocos2d::EventKeyboard::KeyCode keyCode , cocos2d::Event* keyEvent ) {
+		switch (keyCode)
+		{
+			case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+				input.KeyRelease(1);
+				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+				input.KeyRelease(2);
+				break;
+			default:
+				break;
+		}
+	};
+	getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener , this);
 	
 	// タッチイベント
 	auto touch = EventListenerTouchOneByOne::create();
@@ -58,6 +94,16 @@ bool HelloWorld::init()
 	{
 		auto location = touch->getLocation();
 		input.TouchBegin({location.x, location.y});
+		
+		switch (mode)
+		{
+			case Mode::Dig:
+				field.Dig(location.x, location.y);
+				break;
+			default:
+				break;
+		}
+		
 		return true;
 	};
 	
@@ -65,6 +111,17 @@ bool HelloWorld::init()
 	{
 		auto location = touch->getLocation();
 		input.TouchMove({location.x, location.y});
+		
+		
+		switch (mode)
+		{
+			case Mode::Dig:
+				field.Dig(location.x, location.y);
+				break;
+			default:
+				break;
+		}
+		
 		return true;
 	};
 	
@@ -72,8 +129,29 @@ bool HelloWorld::init()
 	{
 		auto location = touch->getLocation();
 		input.TouchEnd({location.x, location.y});
+		
+		int menu = field.SelectTile(location.x, location.y);
+		printf("menu:%d\n", menu);
+		
+		if (menu < 0 && false)
+		{
+			switch (mode)
+			{
+				case Mode::Dig:
+					mode = Mode::Normal;
+					textMode->setString("Normal");
+					break;
+				default:
+					mode = Mode::Dig;
+					textMode->setString("Dig");
+					break;
+			}
+		}
 	};
 	getEventDispatcher()->addEventListenerWithSceneGraphPriority(touch, this);
+	
+	// フィールド
+	field.Initialize(this);
 	
 	// コンポーネント
 	components.Initialize(&entities);
@@ -132,22 +210,22 @@ bool HelloWorld::init()
 	// プレイヤーキャラ
 	{
 		Archetype archetype = {
-			typeid(SpawnerComponent),
+//			typeid(SpawnerComponent),
 			typeid(MoveComponent),
 			typeid(TransformComponent),
 			typeid(VisualComponent),
 		};
 		Entity entity = components.CreateEntity(archetype);
-		{
-			auto handle = spawnComponent->GetHandle(entity);
-			Archetype archetype = {
-				typeid(TransformComponent),
-				typeid(LifetimeComponent),
-				typeid(LeftComponent),
-				typeid(VisualComponent),
-			};
-			spawnComponent->SetArchetype(handle, archetype);
-		}
+//		{
+//			auto handle = spawnComponent->GetHandle(entity);
+//			Archetype archetype = {
+//				typeid(TransformComponent),
+//				typeid(LifetimeComponent),
+//				typeid(LeftComponent),
+//				typeid(VisualComponent),
+//			};
+//			spawnComponent->SetArchetype(handle, archetype);
+//		}
 		{
 			auto handle = visualComponent->GetHandle(entity);
 			visualComponent->SetTextureName(handle, "mon_002.png");
@@ -156,7 +234,7 @@ bool HelloWorld::init()
 		}
 	}
 #endif
-#if 1
+#if 0
 	// タッチの軌跡
 	{
 		Archetype archetype = {
@@ -175,37 +253,16 @@ bool HelloWorld::init()
 		}
 	}
 #endif
-	
-	// キーイベント
-	auto listener = EventListenerKeyboard::create();
-	listener->onKeyPressed = [this]( cocos2d::EventKeyboard::KeyCode keyCode , cocos2d::Event* keyEvent ) {
-		switch (keyCode)
-		{
-			case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
-				input.KeyPress(1);
-				break;
-			case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
-				input.KeyPress(2);
-				break;
-			default:
-				break;
-		}
-	};
-	listener->onKeyReleased= [this]( cocos2d::EventKeyboard::KeyCode keyCode , cocos2d::Event* keyEvent ) {
-		switch (keyCode)
-		{
-			case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
-				input.KeyRelease(1);
-				break;
-			case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
-				input.KeyRelease(2);
-				break;
-			default:
-				break;
-		}
-	};
-	getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener , this);
-	
+#if 0
+	auto sp = Sprite::create("chip02d_dungeon.png");
+	sp->getTexture()->setAliasTexParameters();
+	sp->setTextureRect(Rect(0, 0, 16, 16));
+	sp->setContentSize(Size(32, 32));
+	sp->setPosition(Vec2(0, 0));
+	sp->setAnchorPoint(Vec2(0, 0));
+	sp->setScale(8);
+	addChild(sp);
+#endif
 	scheduleUpdate();
 	
     return true;

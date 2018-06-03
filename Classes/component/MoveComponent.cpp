@@ -1,5 +1,6 @@
 #include "MoveComponent.h"
 #include "TransformComponent.h"
+#include <algorithm>
 
 void MoveComponent::Update(EntityRegistry& registry, float dt)
 {
@@ -12,6 +13,7 @@ void MoveComponent::Update(EntityRegistry& registry, float dt)
 		
 		auto transformHandle = Transform->GetHandle(GetEntity(i));
 		Vector2f position = Transform->GetPosition(transformHandle);
+		Vector2f scale = Transform->GetScale(transformHandle);
 		
 		int keyState = input->GetKeyState();
 		Vector2f location;
@@ -39,11 +41,31 @@ void MoveComponent::Update(EntityRegistry& registry, float dt)
 			{
 				d = 1;
 			}
+			
+			if (position.X-15 < location.X && position.X +15 > location.X
+			&& position.Y-15 < location.Y && position.Y +15 > location.Y)
+			{
+//				scale.X += 0.1;
+//				scale.Y += 0.1;
+				
+				scale.X = std::min(10.f, scale.X);
+				scale.Y = std::min(10.f, scale.Y);
+			}
+			else
+			{
+//				scale.X -= 0.05;
+//				scale.Y -= 0.05;
+				
+				scale.X = std::max(1.f, scale.X);
+				scale.Y = std::max(1.f, scale.Y);
+			}
+			//printf("x:%f y:%f x:%f y:%f sx:%f sy:%f\n", position.X, position.Y, location.X, location.Y, scale.X, scale.Y);
 		}
 		
 		position.X += m_Data.Speed[i] * dt * d;
 		
 		Transform->SetPosition(transformHandle, position);
+		Transform->SetScale(transformHandle, scale);
 	}
 }
 

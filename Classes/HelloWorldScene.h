@@ -3,12 +3,22 @@
 
 #include "cocos2d.h"
 #include "ECS.h"
+#include "component/Field.h"
+
+enum class Mode
+{
+	Normal = 0,
+	Dig,
+};
 
 class HelloWorld : public cocos2d::Layer
 {
 	EntityRegistry entities;
 	ComponentRegistry components;
 	Input input;
+	Field field;
+	Mode mode = Mode::Normal;
+	cocos2d::Label* textMode;
 	
 public:
     static cocos2d::Scene* createScene();
