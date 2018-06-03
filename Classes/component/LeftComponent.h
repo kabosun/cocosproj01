@@ -11,6 +11,7 @@ class TransformComponent;
 
 struct _LeftComponent
 {
+	std::vector<float> Speed;
 	std::vector<float> Angle;
 };
 
@@ -24,6 +25,7 @@ public:
 	{
 		Component::Initialize(registry, maxSize);
 		
+		m_Data.Speed.resize(maxSize);
 		m_Data.Angle.resize(maxSize);
 	}
 	

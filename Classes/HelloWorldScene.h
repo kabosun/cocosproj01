@@ -8,6 +8,7 @@ class HelloWorld : public cocos2d::Layer
 {
 	EntityRegistry entities;
 	ComponentRegistry components;
+	Input input;
 	
 public:
     static cocos2d::Scene* createScene();

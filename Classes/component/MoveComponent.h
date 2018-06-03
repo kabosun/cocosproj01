@@ -3,6 +3,7 @@
 #include <vector>
 #include "../ecs/Entity.h"
 #include "../ecs/Component.h"
+#include "Input.h"
 
 using namespace ecs2;
 
@@ -16,7 +17,8 @@ struct _MoveComponent
 class MoveComponent : public Component, public IUpdatable
 {
 	_MoveComponent m_Data;
-	TransformComponent* Transform;
+	TransformComponent* Transform = nullptr;
+	Input* input = nullptr;
 
 public:
 	void Initialize(EntityRegistry& registry, int maxSize) override
@@ -29,6 +31,11 @@ public:
 	void SetSharedComponent(TransformComponent* transform)
 	{
 		Transform = transform;
+	}
+	
+	void SetInput(Input* input)
+	{
+		this->input = input;
 	}
 
 	void Update(EntityRegistry& registry, float dt) override;

@@ -50,6 +50,32 @@ bool HelloWorld::init()
 
     /////////////////////////////
     // 3. add your codes below...
+	input.Reset();
+	
+	// タッチイベント
+	auto touch = EventListenerTouchOneByOne::create();
+	touch->onTouchBegan = [this](cocos2d::Touch* touch, cocos2d::Event* event)
+	{
+		auto location = touch->getLocation();
+		input.TouchBegin({location.x, location.y});
+		return true;
+	};
+	
+	touch->onTouchMoved = [this](cocos2d::Touch* touch, cocos2d::Event* event)
+	{
+		auto location = touch->getLocation();
+		input.TouchMove({location.x, location.y});
+		return true;
+	};
+	
+	touch->onTouchEnded = [this](cocos2d::Touch* touch, cocos2d::Event* event)
+	{
+		auto location = touch->getLocation();
+		input.TouchEnd({location.x, location.y});
+	};
+	getEventDispatcher()->addEventListenerWithSceneGraphPriority(touch, this);
+	
+	// コンポーネント
 	components.Initialize(&entities);
 	
 	const int maxSize = 1024 * 5;
@@ -63,20 +89,30 @@ bool HelloWorld::init()
 	auto&& moveComponent = components.AddUpdatableComponent<MoveComponent>();
 	moveComponent->Initialize(entities, maxSize);
 	moveComponent->SetSharedComponent(transformComponent.get());
+	moveComponent->SetInput(&input);
 	
 	auto&& leftComponent = components.AddUpdatableComponent<LeftComponent>();
 	leftComponent->Initialize(entities, maxSize);
 	leftComponent->SetSharedComponent(transformComponent.get());
 	
-	components.AddUpdatableComponent<LifetimeComponent>()->Initialize(entities, maxSize);
+	auto&& lifetimeComponent = components.AddUpdatableComponent<LifetimeComponent>();
+	lifetimeComponent->Initialize(entities, maxSize);
 
 	auto&& visualComponent = components.AddUpdatableComponent<VisualComponent>();
 	visualComponent->Initialize(entities, maxSize, this);
 	visualComponent->SetSharedComponent(transformComponent.get());
 	
+	auto&& touchSpawnComponent = components.AddUpdatableComponent<TouchPointSpawnerComponent>();
+	touchSpawnComponent->Initialize(entities, maxSize);
+	touchSpawnComponent->SetSharedComponent(transformComponent.get());
+	touchSpawnComponent->SetSharedComponent(lifetimeComponent.get());
+	touchSpawnComponent->SetSharedComponent(visualComponent.get());
+	touchSpawnComponent->SetInput(&input);
+	
 	// bind event
 	entities.AddEventListener(visualComponent.get());
 	
+#if 0
 	Archetype archetype = {
 		typeid(SpawnerComponent),
 	};
@@ -86,26 +122,89 @@ bool HelloWorld::init()
 		Archetype archetype = {
 			typeid(TransformComponent),
 			typeid(LifetimeComponent),
-			typeid(MoveComponent),
 			typeid(LeftComponent),
 			typeid(VisualComponent),
 		};
 		spawnComponent->SetArchetype(handle, archetype);
 	}
-#if 0
+#endif
+#if 1
+	// プレイヤーキャラ
 	{
-		Entity entity = components.CreateEntity(archetype);
-		auto handle = spawnComponent->GetHandle(entity);
 		Archetype archetype = {
-			typeid(TransformComponent),
-			typeid(LifetimeComponent),
+			typeid(SpawnerComponent),
 			typeid(MoveComponent),
-//			typeid(LeftComponent),
-//			typeid(VisualComponent),
+			typeid(TransformComponent),
+			typeid(VisualComponent),
 		};
-		spawnComponent->SetArchetype(handle, archetype);
+		Entity entity = components.CreateEntity(archetype);
+		{
+			auto handle = spawnComponent->GetHandle(entity);
+			Archetype archetype = {
+				typeid(TransformComponent),
+				typeid(LifetimeComponent),
+				typeid(LeftComponent),
+				typeid(VisualComponent),
+			};
+			spawnComponent->SetArchetype(handle, archetype);
+		}
+		{
+			auto handle = visualComponent->GetHandle(entity);
+			visualComponent->SetTextureName(handle, "mon_002.png");
+			handle = transformComponent->GetHandle(entity);
+			transformComponent->SetPosition(handle, {100, 100});
+		}
 	}
 #endif
+#if 1
+	// タッチの軌跡
+	{
+		Archetype archetype = {
+			typeid(TouchPointSpawnerComponent),
+			typeid(TransformComponent),
+		};
+		Entity entity = components.CreateEntity(archetype);
+		{
+			auto handle = touchSpawnComponent->GetHandle(entity);
+			Archetype archetype = {
+				typeid(TransformComponent),
+				typeid(LifetimeComponent),
+				typeid(VisualComponent),
+			};
+			touchSpawnComponent->SetArchetype(handle, archetype);
+		}
+	}
+#endif
+	
+	// キーイベント
+	auto listener = EventListenerKeyboard::create();
+	listener->onKeyPressed = [this]( cocos2d::EventKeyboard::KeyCode keyCode , cocos2d::Event* keyEvent ) {
+		switch (keyCode)
+		{
+			case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+				input.KeyPress(1);
+				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+				input.KeyPress(2);
+				break;
+			default:
+				break;
+		}
+	};
+	listener->onKeyReleased= [this]( cocos2d::EventKeyboard::KeyCode keyCode , cocos2d::Event* keyEvent ) {
+		switch (keyCode)
+		{
+			case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+				input.KeyRelease(1);
+				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+				input.KeyRelease(2);
+				break;
+			default:
+				break;
+		}
+	};
+	getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener , this);
 	
 	scheduleUpdate();
 	

@@ -29,7 +29,9 @@ namespace ecs2
 	{
 	public:
 
+		virtual void Assign() = 0;
 		virtual ComponentHandle Attach(Entity entity) = 0;
+		//virtual void Cleanup() = 0;
 		virtual void GC(const EntityRegistry& registry) = 0;
 	};
 	
@@ -40,6 +42,8 @@ namespace ecs2
 		ComponentRegistry* m_ComponentRegistry;
 		PackedArray<Entity> m_Entity;
 		std::unordered_map<EntityId, int> m_LUTable;
+		std::vector<Entity> m_AssignList;
+		std::vector<Entity> m_RemoveList;
 
 	protected:
 		
@@ -52,22 +56,6 @@ namespace ecs2
 		ComponentRegistry* ComponentRegistry()
 		{
 			return m_ComponentRegistry;
-		}
-		
-		// GCされたコンポーネントを削除します
-		void Remove(int index)
-		{
-			int lastIndex = m_Entity.size() - 1;
-			Entity entity = m_Entity[index];
-			Entity lastEntity = m_Entity[lastIndex];
-			
-			// 削除したentityの位置に最後のコンポーネントをコピーする
-			m_Entity.remove(index);
-			Reset(index);
-			Compact(index, lastIndex);
-			
-			m_LUTable[lastEntity.Id] = index;
-			m_LUTable.erase(entity.Id);
 		}
 		
 	public:
@@ -85,7 +73,7 @@ namespace ecs2
 		
 		int Size() const
 		{
-			return m_Entity.size();
+			return (int)m_Entity.size() - (int)m_AssignList.size();
 		}
 		
 		inline Entity GetEntity(int index) const
@@ -98,7 +86,7 @@ namespace ecs2
 			if (m_LUTable.count(entity.Id) == 0)
 			{
 				printf("index:%d gen:%d\n", entity.Index(), entity.Generation());
-				assert(false);
+				assert(false);	// 存在しないentity
 				return {-1};
 			}
 			
@@ -117,12 +105,12 @@ namespace ecs2
 			
 			if (m_LUTable.count(entity.Id) == 0)
 			{
+				m_AssignList.push_back(entity);
+				
 				auto n = m_Entity.size();
 				m_Entity.push_back(entity);
 				m_LUTable[entity.Id] = n;
 				Reset(n);
-
-				OnCreate(n);
 				
 				ComponentHandle h = { n };
 				return h;
@@ -131,6 +119,20 @@ namespace ecs2
 			{
 				ComponentHandle h = { m_LUTable[entity.Id] };
 				return h;
+			}
+		}
+		
+		void Assign() override
+		{
+			if (!m_AssignList.empty())
+			{
+				for (Entity entity : m_AssignList)
+				{
+					assert(HasComponent(entity));
+					
+					OnCreate(m_LUTable.at(entity.Id));
+				}
+				m_AssignList.clear();
 			}
 		}
 		
@@ -152,6 +154,23 @@ namespace ecs2
 				// entityが死んでいたらコンポーネントも削除する
 				Remove(n);
 			}
+		}
+		
+	protected:
+		// GCされたコンポーネントを削除します
+		void Remove(int index)
+		{
+			int lastIndex = m_Entity.size() - 1;
+			Entity entity = m_Entity[index];
+			Entity lastEntity = m_Entity[lastIndex];
+			
+			// 削除したentityの位置に最後のコンポーネントをコピーする
+			m_Entity.remove(index);
+			Reset(index);
+			Compact(index, lastIndex);
+			
+			m_LUTable[lastEntity.Id] = index;
+			m_LUTable.erase(entity.Id);
 		}
 	};
 

@@ -58,6 +58,11 @@ namespace ecs2
 		
 		void Update(float dt)
 		{
+			for (auto pair : m_ComponentSystems)
+			{
+				pair.second->Assign();
+			}
+			
 			for (auto&& system : m_UpdatableSystems)
 			{
 				system->Update(*m_EntityRegistry, dt);
