@@ -18,7 +18,7 @@ struct _VisualComponent
 	std::vector<cocos2d::Sprite*> Sprite;
 };
 
-class VisualComponent : public ecs2::Component, public IUpdatable, public IEntityEventListener
+class VisualComponent : public ecs2::Component, public IUpdatable
 {
 	_VisualComponent m_Data;
 	cocos2d::Node* m_Scene;
@@ -57,10 +57,6 @@ public:
 	
 	void GC(const EntityRegistry& registry) override;
 	
-	void OnCreateEntity(Entity entity) override
-	{}
-	
-	void OnRemoveEntity(Entity entity) override;
 	
 protected:
 	void Reset(int index) override

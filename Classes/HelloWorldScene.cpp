@@ -187,9 +187,6 @@ bool HelloWorld::init()
 	touchSpawnComponent->SetSharedComponent(visualComponent.get());
 	touchSpawnComponent->SetInput(&input);
 	
-	// bind event
-	entities.AddEventListener(visualComponent.get());
-	
 #if 0
 	Archetype archetype = {
 		typeid(SpawnerComponent),
@@ -230,7 +227,7 @@ bool HelloWorld::init()
 			auto handle = visualComponent->GetHandle(entity);
 			visualComponent->SetTextureName(handle, "mon_002.png");
 			handle = transformComponent->GetHandle(entity);
-			transformComponent->SetPosition(handle, {100, 100});
+			transformComponent->SetPosition(handle, {100, 96-16});
 		}
 	}
 #endif
