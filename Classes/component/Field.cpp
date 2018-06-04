@@ -15,6 +15,13 @@ inline static Sprite* CreateSprite(const std::string& filename, Rect rect)
 	return sprite;
 }
 
+inline static Sprite* SetTextureRect(Sprite* sprite, Rect rect)
+{
+	sprite->setTextureRect(CC_RECT_PIXELS_TO_POINTS(rect));
+	sprite->setContentSize(Size(rect.size.width, rect.size.height));
+	return sprite;
+}
+
 inline int GetFieldX(int index)
 {
 	return index%TILE_SIZE*TILECHIP_SIZE;
@@ -25,9 +32,9 @@ inline int GetFieldY(int index)
 	return index/TILE_SIZE*TILECHIP_SIZE;
 }
 
-inline int GetFieldIndex(float x, float y)
+inline int GetFieldIndex(float x, float y, int dx=0, int dy=0)
 {
-	return (int)(x)/(TILECHIP_SIZE*SCALE) + (int)(y)/(TILECHIP_SIZE*SCALE)*TILE_SIZE;
+	return ((int)(x)/(TILECHIP_SIZE*SCALE) + dx) + ((int)(y)/(TILECHIP_SIZE*SCALE) + dy)*TILE_SIZE;
 }
 
 void Field::Initialize(Node* scene)
@@ -74,6 +81,15 @@ void Field::Initialize(Node* scene)
 #endif
 }
 
+int Field::GetMap(float x, float y) const
+{
+	int index = GetFieldIndex(x, y);
+	if (index >= 0 && index < m_Map.size())
+		return m_Map[index];
+	
+	return -1;
+}
+
 int Field::SelectTile(float x, float y)
 {
 	if (x < 800) return -1;
@@ -104,24 +120,23 @@ void Field::Dig(float x, float y)
 	if (m_Map[index] != m_Tile)
 	{
 		m_Map[index] = 0;
-		m_Root->removeChild(m_Tiles[index]);
+		//m_Root->removeChild(m_Tiles[index]);
 		
 		switch (m_Tile)
 		{
 			case 0:
-				m_Tiles[index] = nullptr;
+			{
+				Rect rect = Rect((8-1)*TILECHIP_SIZE, (0)*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
+				SetTextureRect(m_Tiles[index], rect);
 				break;
+			}
 			default:
-				Sprite* chip = CreateSprite("chip02d_dungeon.png", Rect(0*TILECHIP_SIZE, (m_Tile-1)*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE));
-				int x = GetFieldX(index);
-				int y = GetFieldY(index);
-				chip->setAnchorPoint({0, 0});
-				chip->setPosition(Vec2(x, y));
-				
+			{
 				m_Map[index] = m_Tile;
-				m_Tiles[index] = chip;
-				m_Root->addChild(m_Tiles[index]);
+				Rect rect = Rect(0*TILECHIP_SIZE, (m_Tile-1)*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
+				SetTextureRect(m_Tiles[index], rect);
 				break;
+			}
 		}
 	}
 }

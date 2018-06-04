@@ -6,7 +6,7 @@
 class Field
 {
 	int m_Tile;
-	std::vector<unsigned short> m_Map;
+	std::vector<int> m_Map;
 	std::vector<cocos2d::Sprite*> m_Tiles;
 	std::vector<cocos2d::Sprite*> m_Menu;
 	cocos2d::Node* m_Root;
@@ -17,12 +17,19 @@ class Field
 public:
 	void Initialize(cocos2d::Node* scene);
 	
-	const std::vector<unsigned short> GetMap() const
+	const std::vector<int> GetMap() const
 	{
 		return m_Map;
+	}
+	
+	const std::vector<cocos2d::Sprite*> GetTiles() const
+	{
+		return m_Tiles;
 	}
 	
 	void Dig(float x, float y);
 	
 	int SelectTile(float x, float y);
+	
+	int GetMap(float x, float y) const;
 };

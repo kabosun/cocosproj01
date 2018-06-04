@@ -62,7 +62,7 @@ protected:
 	void Reset(int index) override
 	{
 		m_Data.TextureName[index] = "TileA1.png";
-		m_Data.Rect[index] = {0, 0, 32, 32};
+		m_Data.Rect[index] = {0, 0, 24, 24};
 		m_Data.Sprite[index] = nullptr;
 	}
 	

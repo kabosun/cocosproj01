@@ -187,6 +187,11 @@ bool HelloWorld::init()
 	touchSpawnComponent->SetSharedComponent(visualComponent.get());
 	touchSpawnComponent->SetInput(&input);
 	
+	auto&& walkComponent = components.AddUpdatableComponent<WalkComponent>();
+	walkComponent->Initialize(entities, maxSize);
+	walkComponent->SetSharedComponent(transformComponent.get());
+	walkComponent->SetField(&field, this);
+	
 #if 0
 	Archetype archetype = {
 		typeid(SpawnerComponent),
@@ -208,7 +213,8 @@ bool HelloWorld::init()
 	{
 		Archetype archetype = {
 //			typeid(SpawnerComponent),
-			typeid(MoveComponent),
+//			typeid(MoveComponent),
+//			typeid(WalkComponent),
 			typeid(TransformComponent),
 			typeid(VisualComponent),
 		};
