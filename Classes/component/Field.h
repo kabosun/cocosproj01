@@ -9,6 +9,8 @@ class Field
 	std::vector<int> m_Map;
 	std::vector<cocos2d::Sprite*> m_Tiles;
 	std::vector<cocos2d::Sprite*> m_Menu;
+	std::vector<int> m_Chips;
+	
 	cocos2d::Node* m_Root;
 	
 	cocos2d::Node* m_Scene;

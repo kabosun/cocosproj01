@@ -42,17 +42,29 @@ void Field::Initialize(Node* scene)
 	m_Scene = scene;
 	m_Map.resize(TILE_SIZE * TILE_SIZE);
 	m_Tiles.resize(TILE_SIZE * TILE_SIZE);
-	m_Menu.resize(4);
 	
 	m_Root = Sprite::create();
 	m_Root->setPosition(0, 0);
 	m_Root->setScale(SCALE);
 	
+	m_Chips.push_back(7);
+	m_Chips.push_back(16*10+7);
+	m_Chips.push_back(3);
+	m_Chips.push_back(6);
+	m_Chips.push_back(9);
+	m_Chips.push_back(16*12+6);
+	m_Menu.resize(m_Chips.size());
+	
 	for (int i=0; i<m_Map.size(); i++)
 	{
 		int x = GetFieldX(i);
 		int y = GetFieldY(i);
-		Sprite* chip = CreateSprite("chip02d_dungeon.png", Rect(0*TILECHIP_SIZE, 0*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE));
+		
+		int cx = m_Chips[1] % 16;
+		int cy = m_Chips[1] / 16;
+		Rect rect = Rect(cx*TILECHIP_SIZE, cy*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
+		
+		Sprite* chip = CreateSprite("chip02d_dungeon.png", rect);
 		chip->setAnchorPoint({0, 0});
 		chip->setPosition(Vec2(x, y));
 		
@@ -66,8 +78,12 @@ void Field::Initialize(Node* scene)
 	// menu
 	for (int i=0; i<m_Menu.size(); i++)
 	{
-		Sprite* chip = CreateSprite("chip02d_dungeon.png", Rect(0*TILECHIP_SIZE, i*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE));
-		chip->setPosition(Vec2(810, MENU_SIZE*(i+1)));
+		int cx = m_Chips[i] % 16;
+		int cy = m_Chips[i] / 16;
+		Rect rect = Rect(cx*TILECHIP_SIZE, cy*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
+		
+		Sprite* chip = CreateSprite("chip02d_dungeon.png", rect);
+		chip->setPosition(Vec2(810, MENU_SIZE*i));
 		chip->setAnchorPoint({0, 0});
 		chip->setScale(MENU_SIZE / TILECHIP_SIZE);
 		
@@ -119,13 +135,18 @@ void Field::Dig(float x, float y)
 	
 	if (m_Map[index] != m_Tile)
 	{
-		m_Map[index] = 0;
-		//m_Root->removeChild(m_Tiles[index]);
+		int cx = m_Chips[m_Tile] % 16;
+		int cy = m_Chips[m_Tile] / 16;
+		Rect rect = Rect(cx*TILECHIP_SIZE, cy*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
+		SetTextureRect(m_Tiles[index], rect);
+		m_Map[index] = m_Tile;
 		
+#if 0
 		switch (m_Tile)
 		{
 			case 0:
 			{
+				m_Map[index] = 0;
 				Rect rect = Rect((8-1)*TILECHIP_SIZE, (0)*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
 				SetTextureRect(m_Tiles[index], rect);
 				break;
@@ -138,5 +159,6 @@ void Field::Dig(float x, float y)
 				break;
 			}
 		}
+#endif
 	}
 }

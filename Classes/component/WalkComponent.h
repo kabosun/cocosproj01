@@ -53,7 +53,7 @@ public:
 			
 			m_Sprites[i] = cocos2d::Label::createWithSystemFont(a, "HiraKakuProN-W6", 10);
 			m_Sprites[i]->setAnchorPoint(cocos2d::Vec2(0, 0));
-			tiles[i]->addChild(m_Sprites[i]);
+//			tiles[i]->addChild(m_Sprites[i]);
 		}
 	}
 	

@@ -24,8 +24,8 @@ void WalkComponent::Update(EntityRegistry& registry, float dt)
 				m_Evaluation[i] = 1;	// 壁がない
 			
 			
-			auto a = std::to_string((int)(m_History[i]));
-			m_Sprites[i]->setString(a);
+//			auto a = std::to_string((int)(m_History[i]));
+//			m_Sprites[i]->setString(a);
 		}
 		m_ReevaluateFrame = 60;
 		eval = true;
