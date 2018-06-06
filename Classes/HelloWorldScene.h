@@ -20,6 +20,8 @@ class HelloWorld : public cocos2d::Layer
 	Mode mode = Mode::Normal;
 	cocos2d::Label* textMode;
 	
+	std::unordered_map<int, Entity> m_TileEntities;
+	
 public:
     static cocos2d::Scene* createScene();
 

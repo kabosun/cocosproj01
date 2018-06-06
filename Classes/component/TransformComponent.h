@@ -15,7 +15,7 @@ struct _TransformComponent
 	std::vector<Vector2f> Scale;
 };
 
-class TransformComponent : public ecs2::Component, public IEntityEventListener
+class TransformComponent : public ecs2::Component
 {
 	_TransformComponent m_Data;
 	
@@ -28,21 +28,16 @@ public:
 		m_Data.Rotation.resize(maxSize);
 		m_Data.Scale.resize(maxSize);
 	}
-	
-	void OnCreateEntity(Entity entity) override
-	{}
-	
-	void OnRemoveEntity(Entity entity) override
-	{}
 
 	Vector2f GetPosition(ComponentHandle handle) const
 	{
-		assert(handle.index >= 0 && handle.index < m_Data.Position.size());
+		assert(handle.index >= 0);
 		return m_Data.Position[handle.index];
 	}
 	
 	void SetPosition(ComponentHandle handle, const Vector2f& position)
 	{
+		assert(handle.index >= 0);
 		m_Data.Position[handle.index] = position;
 	}
 

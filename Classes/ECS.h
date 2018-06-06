@@ -11,5 +11,6 @@
 #include "component/LeftComponent.h"
 #include "component/TouchPointSpawnerComponent.h"
 #include "component/WalkComponent.h"
+#include "component/ProjectileComponent.h"
 
 #include "render_component/VisualComponent.h"

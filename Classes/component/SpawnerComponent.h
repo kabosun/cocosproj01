@@ -16,7 +16,7 @@ struct _SpawnerComponent
 	std::vector<int> SpawnCount;
 };
 
-class SpawnerComponent : public Component, public IUpdatable, public IEntityEventListener
+class SpawnerComponent : public Component, public IUpdatable
 {
 	_SpawnerComponent m_Data;
 	
@@ -30,14 +30,9 @@ public:
 		m_Data.SpawnCount.resize(maxSize);
 	}
 	
-	void OnCreate(int index) override;
-	
 	void Update(EntityRegistry& registry, float dt) override;
 	
-	void OnCreateEntity(Entity entity) override
-	{}
-	
-	void OnRemoveEntity(Entity entity) override;
+	void GC(const EntityRegistry& registry) override;
 	
 	void SetArchetype(ComponentHandle handle, Archetype archtype);
 	
@@ -45,8 +40,8 @@ protected:
 	void Reset(int index) override
 	{
 		m_Data.SpawnFrame[index].Current = 0;
-		m_Data.SpawnFrame[index].Max = 1;
-		m_Data.SpawnCount[index] = 2;
+		m_Data.SpawnFrame[index].Max = 180;
+		m_Data.SpawnCount[index] = 1;
 	}
 	
 	void Compact(int index, int lastIndex) override

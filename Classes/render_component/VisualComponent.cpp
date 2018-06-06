@@ -33,8 +33,9 @@ void VisualComponent::Update(EntityRegistry& registry, float dt)
 			auto position = Transform->GetPosition(handle);
 			auto scale = Transform->GetScale(handle);
 			
-			m_Data.Sprite[i]->setPosition(position.X, position.Y);
-			m_Data.Sprite[i]->setScale(scale.X, scale.Y);
+			auto&& sprite = m_Data.Sprite[i];
+			sprite->setPosition(position.X, position.Y);
+			sprite->setScale(scale.X, scale.Y);
 		}
 	}
 }
