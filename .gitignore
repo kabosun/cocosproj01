@@ -4,6 +4,7 @@ CMakeLists.txt
 
 # Win
 Thumbs.db
+*.lnk
 
 # VS
 *.suo
