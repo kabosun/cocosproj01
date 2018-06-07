@@ -169,6 +169,10 @@ bool HelloWorld::init()
 	moveComponent->SetSharedComponent(transformComponent.get());
 	moveComponent->SetInput(&input);
 	
+	auto&& projectileComponent = components.AddUpdatableComponent<ProjectileComponent>();
+	projectileComponent->Initialize(entities, maxSize);
+	projectileComponent->SetSharedComponent(transformComponent.get());
+	
 	auto&& leftComponent = components.AddUpdatableComponent<LeftComponent>();
 	leftComponent->Initialize(entities, maxSize);
 	leftComponent->SetSharedComponent(transformComponent.get());
@@ -208,7 +212,7 @@ bool HelloWorld::init()
 		spawnComponent->SetArchetype(handle, archetype);
 	}
 #endif
-#if 1
+#if 0
 	// プレイヤーキャラ
 	{
 		Archetype archetype = {
@@ -266,6 +270,53 @@ bool HelloWorld::init()
 	sp->setScale(8);
 	addChild(sp);
 #endif
+	
+	field.SetCreateTileFunc([this](int id, int index, int x, int y) {
+		
+		if (m_TileEntities.count(index) > 0)
+		{
+			Entity entity = m_TileEntities.at(index);
+			entities.Remove(entity);
+			
+			m_TileEntities.erase(index);
+		}
+		
+		switch(id)
+		{
+			case 359:
+			{
+				Archetype archetype = {
+					typeid(TransformComponent),
+					typeid(SpawnerComponent),
+				};
+				{
+					auto&& transformComponent = components.GetComponent<TransformComponent>();
+					auto&& spawnComponent = components.GetComponent<SpawnerComponent>();
+					
+					Entity entity = components.CreateEntity(archetype);
+					{
+						auto handle = transformComponent->GetHandle(entity);
+						transformComponent->SetPosition(handle, Vector2f(x, y));
+					}
+					{
+						Archetype archetype = {
+							typeid(TransformComponent),
+							typeid(LifetimeComponent),
+							typeid(ProjectileComponent),
+							typeid(VisualComponent),
+						};
+						auto handle = spawnComponent->GetHandle(entity);
+						spawnComponent->SetArchetype(handle, archetype);
+					}
+					
+					m_TileEntities[index] = entity;
+				}
+				break;
+			}
+		}
+	});
+	
+	
 	scheduleUpdate();
 	
     return true;

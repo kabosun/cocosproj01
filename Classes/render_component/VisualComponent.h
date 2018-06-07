@@ -61,8 +61,9 @@ public:
 protected:
 	void Reset(int index) override
 	{
-		m_Data.TextureName[index] = "TileA1.png";
-		m_Data.Rect[index] = {0, 0, 24, 24};
+		m_Data.TextureName[index] = "chip02d_dungeon.png";
+		int chip = 443;
+		m_Data.Rect[index] = {(float)(chip%30*16), (float)(chip/30*16), 16, 16};
 		m_Data.Sprite[index] = nullptr;
 	}
 	
@@ -71,6 +72,8 @@ protected:
 		m_Data.TextureName[index] = m_Data.TextureName[lastIndex];
 		m_Data.Rect[index] = m_Data.Rect[lastIndex];
 		m_Data.Sprite[index] = m_Data.Sprite[lastIndex];
+		
+		m_Data.Sprite[lastIndex] = nullptr;		// 参照カウンタなので参照は残さない
 	}
 };
 

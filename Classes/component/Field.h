@@ -1,15 +1,20 @@
 #pragma once
 
 #include <vector>
+#include <functional>
 #include "cocos2d.h"
+#include "Entity.h"
 
 class Field
 {
+	using FnCreateTile = std::function<void(int, int, int, int)>;
+	
 	int m_Tile;
 	std::vector<int> m_Map;
 	std::vector<cocos2d::Sprite*> m_Tiles;
 	std::vector<cocos2d::Sprite*> m_Menu;
 	std::vector<int> m_Chips;
+	FnCreateTile m_OnCreateTile = nullptr;
 	
 	cocos2d::Node* m_Root;
 	
@@ -18,6 +23,11 @@ class Field
 	
 public:
 	void Initialize(cocos2d::Node* scene);
+	
+	void SetCreateTileFunc(FnCreateTile func)
+	{
+		m_OnCreateTile = func;
+	}
 	
 	const std::vector<int> GetMap() const
 	{
@@ -29,7 +39,7 @@ public:
 		return m_Tiles;
 	}
 	
-	void Dig(float x, float y);
+	int Dig(float x, float y);
 	
 	int SelectTile(float x, float y);
 	

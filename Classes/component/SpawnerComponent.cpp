@@ -4,12 +4,6 @@
 #include "../render_component/VisualComponent.h"
 #include "../ecs/ComponentRegistry.h"
 
-void SpawnerComponent::OnCreate(int index)
-{}
-
-void SpawnerComponent::OnRemoveEntity(Entity entity)
-{}
-
 void SpawnerComponent::Update(EntityRegistry& registry, float dt)
 {
 	for (int i=0; i<Size(); i++)
@@ -31,20 +25,32 @@ void SpawnerComponent::Update(EntityRegistry& registry, float dt)
 					auto&& Transform = ComponentRegistry()->GetComponent<TransformComponent>();
 					auto handle = Transform->GetHandle(entity);
 					
-					float x = position.X + mt() % 100;
-					float y = position.Y + mt() % 100 + 100;
+					float x = position.X;// + mt() % 100;
+					float y = position.Y;// + mt() % 100 + 100;
 					Transform->SetPosition(handle, {x, y});
 				}
 				{
 					auto&& Lifetime = ComponentRegistry()->GetComponent<LifetimeComponent>();
 					auto handle = Lifetime->GetHandle(entity);
-					Lifetime->SetLifetime(handle, {0, 256});
+					Lifetime->SetLifetime(handle, {0, 180});
 				}
 			}
 		}
 		else
 		{
 			m_Data.SpawnFrame[i].Current++;
+		}
+	}
+}
+
+void SpawnerComponent::GC(const EntityRegistry& registry)
+{
+	for (int i = 0; i < Size(); i++)
+	{
+		Entity entity = GetEntity(i);
+		if (!registry.Alive(entity))
+		{
+			Remove(i);
 		}
 	}
 }
