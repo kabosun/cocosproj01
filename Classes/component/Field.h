@@ -3,7 +3,7 @@
 #include <vector>
 #include <functional>
 #include "cocos2d.h"
-#include "Entity.h"
+#include "../ecs/Entity.h"
 
 class Field
 {
