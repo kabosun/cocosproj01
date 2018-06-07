@@ -2,7 +2,9 @@
 
 USING_NS_CC;
 
-static const int SCALE = 2;
+static const auto FILENAME = "tile.png";
+static const int TILE_WIDTH = 128 / 16;
+static const int SCALE = 1;
 static const int TILECHIP_SIZE = 16;
 static const int TILE_SIZE = 800 / (TILECHIP_SIZE * SCALE);
 static const int MENU_SIZE = 64;
@@ -47,13 +49,13 @@ void Field::Initialize(Node* scene)
 	m_Root->setPosition(0, 0);
 	m_Root->setScale(SCALE);
 	
-	m_Chips.push_back(7);
-	m_Chips.push_back(241);
+	m_Chips.push_back(0);
+	m_Chips.push_back(1);
+	m_Chips.push_back(2);
 	m_Chips.push_back(3);
-	m_Chips.push_back(6);
-	m_Chips.push_back(359);
-	m_Chips.push_back(116);
-	m_Chips.push_back(379);
+	m_Chips.push_back(4);
+	m_Chips.push_back(5);
+	m_Chips.push_back(8);
 	m_Menu.resize(m_Chips.size());
 	
 	for (int i=0; i<m_Map.size(); i++)
@@ -61,11 +63,11 @@ void Field::Initialize(Node* scene)
 		int x = GetFieldX(i);
 		int y = GetFieldY(i);
 		
-		int cx = m_Chips[1] % 30;
-		int cy = m_Chips[1] / 30;
+		int cx = m_Chips[1] % TILE_WIDTH;
+		int cy = m_Chips[1] / TILE_WIDTH;
 		Rect rect = Rect(cx*TILECHIP_SIZE, cy*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
 		
-		Sprite* chip = CreateSprite("chip02d_dungeon.png", rect);
+		Sprite* chip = CreateSprite(FILENAME, rect);
 		chip->setAnchorPoint({0, 0});
 		chip->setPosition(Vec2(x, y));
 		
@@ -79,11 +81,11 @@ void Field::Initialize(Node* scene)
 	// menu
 	for (int i=0; i<m_Menu.size(); i++)
 	{
-		int cx = m_Chips[i] % 30;
-		int cy = m_Chips[i] / 30;
+		int cx = m_Chips[i] % TILE_WIDTH;
+		int cy = m_Chips[i] / TILE_WIDTH;
 		Rect rect = Rect(cx*TILECHIP_SIZE, cy*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
 		
-		Sprite* chip = CreateSprite("chip02d_dungeon.png", rect);
+		Sprite* chip = CreateSprite(FILENAME, rect);
 		chip->setPosition(Vec2(810, MENU_SIZE*i));
 		chip->setAnchorPoint({0, 0});
 		chip->setScale(MENU_SIZE / TILECHIP_SIZE);
@@ -91,7 +93,7 @@ void Field::Initialize(Node* scene)
 		m_Menu[i] = chip;
 		m_Scene->addChild(m_Menu[i]);
 	}
-#if 1
+#if 0
 	visual = cocos2d::TMXTiledMap::create("field.tmx");
 	//	visual->setPosition({0, 32});
 	m_Scene->addChild(visual);
@@ -136,8 +138,8 @@ int Field::Dig(float x, float y)
 	
 	if (m_Map[index] != m_Tile)
 	{
-		int cx = m_Chips[m_Tile] % 30;
-		int cy = m_Chips[m_Tile] / 30;
+		int cx = m_Chips[m_Tile] % TILE_WIDTH;
+		int cy = m_Chips[m_Tile] / TILE_WIDTH;
 		Rect rect = Rect(cx*TILECHIP_SIZE, cy*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
 		SetTextureRect(m_Tiles[index], rect);
 		m_Map[index] = m_Tile;

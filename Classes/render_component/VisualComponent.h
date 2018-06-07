@@ -61,9 +61,9 @@ public:
 protected:
 	void Reset(int index) override
 	{
-		m_Data.TextureName[index] = "chip02d_dungeon.png";
-		int chip = 443;
-		m_Data.Rect[index] = {(float)(chip%30*16), (float)(chip/30*16), 16, 16};
+		m_Data.TextureName[index] = "tile.png";
+		int chip = 8;
+		m_Data.Rect[index] = {(float)(chip%8*16), (float)(chip/8*16), 16, 16};
 		m_Data.Sprite[index] = nullptr;
 	}
 	

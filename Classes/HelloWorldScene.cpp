@@ -283,7 +283,7 @@ bool HelloWorld::init()
 		
 		switch(id)
 		{
-			case 359:
+			case 5:
 			{
 				Archetype archetype = {
 					typeid(TransformComponent),
