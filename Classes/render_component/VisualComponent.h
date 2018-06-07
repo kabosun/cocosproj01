@@ -63,7 +63,7 @@ protected:
 	{
 		m_Data.TextureName[index] = "tile.png";
 		int chip = 8;
-		m_Data.Rect[index] = {(float)(chip%8*16), (float)(chip/8*16), 16, 16};
+		m_Data.Rect[index] = cocos2d::Rect(chip%8*16, chip/8*16, 16, 16);
 		m_Data.Sprite[index] = nullptr;
 	}
 	

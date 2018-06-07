@@ -173,10 +173,6 @@ bool HelloWorld::init()
 	projectileComponent->Initialize(entities, maxSize);
 	projectileComponent->SetSharedComponent(transformComponent.get());
 	
-	auto&& leftComponent = components.AddUpdatableComponent<LeftComponent>();
-	leftComponent->Initialize(entities, maxSize);
-	leftComponent->SetSharedComponent(transformComponent.get());
-	
 	auto&& lifetimeComponent = components.AddUpdatableComponent<LifetimeComponent>();
 	lifetimeComponent->Initialize(entities, maxSize);
 
@@ -288,15 +284,21 @@ bool HelloWorld::init()
 				Archetype archetype = {
 					typeid(TransformComponent),
 					typeid(SpawnerComponent),
+					typeid(VisualComponent),
 				};
 				{
 					auto&& transformComponent = components.GetComponent<TransformComponent>();
 					auto&& spawnComponent = components.GetComponent<SpawnerComponent>();
+					auto&& visualComponent = components.GetComponent<VisualComponent>();
 					
 					Entity entity = components.CreateEntity(archetype);
 					{
 						auto handle = transformComponent->GetHandle(entity);
-						transformComponent->SetPosition(handle, Vector2f(x, y));
+						transformComponent->SetPosition(handle, Vector2f(x-8, y-8));
+					}
+					{
+						auto handle = visualComponent->GetHandle(entity);
+						visualComponent->SetRect(handle, id % 8 * 16, id / 8 * 16, 16, 16);
 					}
 					{
 						Archetype archetype = {

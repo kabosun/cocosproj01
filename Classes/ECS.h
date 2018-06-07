@@ -8,7 +8,6 @@
 #include "component/TransformComponent.h"
 #include "component/SpawnerComponent.h"
 #include "component/MoveComponent.h"
-#include "component/LeftComponent.h"
 #include "component/TouchPointSpawnerComponent.h"
 #include "component/WalkComponent.h"
 #include "component/ProjectileComponent.h"

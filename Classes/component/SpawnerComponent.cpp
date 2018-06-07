@@ -14,7 +14,7 @@ void SpawnerComponent::Update(EntityRegistry& registry, float dt)
 			
 			auto&& Transform = ComponentRegistry()->GetComponent<TransformComponent>();
 			auto handle = Transform->GetHandle(GetEntity(i));
-			auto position = Transform->GetPosition(handle);
+			auto spawnerPosition = Transform->GetPosition(handle);
 			
 			Archetype archetype = m_Data.Archetype[i];
 			
@@ -25,8 +25,8 @@ void SpawnerComponent::Update(EntityRegistry& registry, float dt)
 					auto&& Transform = ComponentRegistry()->GetComponent<TransformComponent>();
 					auto handle = Transform->GetHandle(entity);
 					
-					float x = position.X;// + mt() % 100;
-					float y = position.Y;// + mt() % 100 + 100;
+					float x = spawnerPosition.X;
+					float y = spawnerPosition.Y;
 					Transform->SetPosition(handle, {x, y});
 				}
 				{

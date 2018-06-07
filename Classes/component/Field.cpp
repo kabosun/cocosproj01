@@ -4,16 +4,17 @@ USING_NS_CC;
 
 static const auto FILENAME = "tile.png";
 static const int TILE_WIDTH = 128 / 16;
-static const int SCALE = 1;
 static const int TILECHIP_SIZE = 16;
-static const int TILE_SIZE = 800 / (TILECHIP_SIZE * SCALE);
-static const int MENU_SIZE = 64;
+static const int WIDTH = 400;
+static const int TILE_SIZE = WIDTH / TILECHIP_SIZE;
+static const int MENU_SIZE = 32;
 
 inline static Sprite* CreateSprite(const std::string& filename, Rect rect)
 {
 	Sprite* sprite = Sprite::create(filename);
 	sprite->setTextureRect(CC_RECT_PIXELS_TO_POINTS(rect));
 	sprite->setContentSize(Size(rect.size.width, rect.size.height));
+	sprite->setAnchorPoint({ 0, 0 });
 	return sprite;
 }
 
@@ -36,7 +37,7 @@ inline int GetFieldY(int index)
 
 inline int GetFieldIndex(float x, float y, int dx=0, int dy=0)
 {
-	return ((int)(x)/(TILECHIP_SIZE*SCALE) + dx) + ((int)(y)/(TILECHIP_SIZE*SCALE) + dy)*TILE_SIZE;
+	return ((int)(x)/TILECHIP_SIZE + dx) + ((int)(y)/TILECHIP_SIZE + dy)*TILE_SIZE;
 }
 
 void Field::Initialize(Node* scene)
@@ -47,7 +48,6 @@ void Field::Initialize(Node* scene)
 	
 	m_Root = Sprite::create();
 	m_Root->setPosition(0, 0);
-	m_Root->setScale(SCALE);
 	
 	m_Chips.push_back(0);
 	m_Chips.push_back(1);
@@ -68,7 +68,6 @@ void Field::Initialize(Node* scene)
 		Rect rect = Rect(cx*TILECHIP_SIZE, cy*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
 		
 		Sprite* chip = CreateSprite(FILENAME, rect);
-		chip->setAnchorPoint({0, 0});
 		chip->setPosition(Vec2(x, y));
 		
 		m_Map[i] = 1;
@@ -86,8 +85,7 @@ void Field::Initialize(Node* scene)
 		Rect rect = Rect(cx*TILECHIP_SIZE, cy*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
 		
 		Sprite* chip = CreateSprite(FILENAME, rect);
-		chip->setPosition(Vec2(810, MENU_SIZE*i));
-		chip->setAnchorPoint({0, 0});
+		chip->setPosition(Vec2(WIDTH+10, MENU_SIZE*i));
 		chip->setScale(MENU_SIZE / TILECHIP_SIZE);
 		
 		m_Menu[i] = chip;
@@ -111,7 +109,7 @@ int Field::GetMap(float x, float y) const
 
 int Field::SelectTile(float x, float y)
 {
-	if (x < 800) return -1;
+	if (x < WIDTH) return -1;
 	
 	int m = (int)(y) / (MENU_SIZE);
 	
@@ -125,7 +123,7 @@ int Field::SelectTile(float x, float y)
 
 int Field::Dig(float x, float y)
 {
-	if (x > 800) return 0;
+	if (x > WIDTH) return 0;
 	
 	int index = GetFieldIndex(x, y);
 	
@@ -140,13 +138,22 @@ int Field::Dig(float x, float y)
 	{
 		int cx = m_Chips[m_Tile] % TILE_WIDTH;
 		int cy = m_Chips[m_Tile] / TILE_WIDTH;
-		Rect rect = Rect(cx*TILECHIP_SIZE, cy*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
-		SetTextureRect(m_Tiles[index], rect);
 		m_Map[index] = m_Tile;
+
+		switch (m_Chips[m_Tile])
+		{
+			case 5:
+				break;
+			default:
+			{
+				Rect rect = Rect(cx*TILECHIP_SIZE, cy*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
+				SetTextureRect(m_Tiles[index], rect);
+			}
+		}
 		
 		if (m_OnCreateTile)
 		{
-			m_OnCreateTile(m_Chips[m_Tile], index, GetFieldX(index)*SCALE+TILECHIP_SIZE, GetFieldY(index)*SCALE+TILECHIP_SIZE);
+			m_OnCreateTile(m_Chips[m_Tile], index, GetFieldX(index)+TILECHIP_SIZE, GetFieldY(index)+TILECHIP_SIZE);
 		}
 	}
 	
