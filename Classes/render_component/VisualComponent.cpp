@@ -6,6 +6,7 @@
 //
 
 #include "VisualComponent.h"
+#include "cocos2d.h"
 #include "../ecs/ComponentRegistry.h"
 #include "../component/TransformComponent.h"
 
@@ -15,7 +16,7 @@ void VisualComponent::OnCreate(int index)
 {
 //	Sprite* sprite = Sprite::create("mon_001r.png", Rect(6, 6, 18, 17));
 	Sprite* sprite = Sprite::create(m_Data.TextureName[index]);
-	Rect& rect = m_Data.Rect[index];
+	game::Rect& rect = m_Data.Rect[index];
 	sprite->setTextureRect(CC_RECT_PIXELS_TO_POINTS(rect));
 	sprite->setContentSize(cocos2d::Size(rect.size.width, rect.size.height));
 	m_Data.Sprite[index] = sprite;
@@ -53,4 +54,30 @@ void VisualComponent::GC(const EntityRegistry& registry)
 			Remove(i);
 		}
 	}
+}
+
+void VisualComponent:: SetRect(ComponentHandle handle, int x, int y, int w, int h)
+{
+	game::Rect& rect = m_Data.Rect[handle.index];
+	rect.origin.x = x;
+	rect.origin.y = y;
+	rect.size.width = w;
+	rect.size.height = h;
+}
+
+void VisualComponent::Reset(int index)
+{
+	m_Data.TextureName[index] = "tile.png";
+	int chip = 8;
+	m_Data.Rect[index] = game::Rect(chip % 8 * 16, chip / 8 * 16, 16, 16);
+	m_Data.Sprite[index] = nullptr;
+}
+
+void VisualComponent::Compact(int index, int lastIndex)
+{
+	m_Data.TextureName[index] = m_Data.TextureName[lastIndex];
+	m_Data.Rect[index] = m_Data.Rect[lastIndex];
+	m_Data.Sprite[index] = m_Data.Sprite[lastIndex];
+
+	m_Data.Sprite[lastIndex] = nullptr;		// 参照カウンタなので参照は残さない
 }

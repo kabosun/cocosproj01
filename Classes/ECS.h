@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ecs/Entity.h"
 #include "ecs/ComponentRegistry.h"
 
 #include "component/HealthComponent.h"
@@ -13,3 +14,5 @@
 #include "component/ProjectileComponent.h"
 
 #include "render_component/VisualComponent.h"
+
+using namespace game;

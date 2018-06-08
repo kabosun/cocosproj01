@@ -27,7 +27,7 @@ bool HelloWorld::init()
         return false;
     }
     
-    Size visibleSize = Director::getInstance()->getVisibleSize();
+	cocos2d::Size visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     /////////////////////////////
@@ -50,7 +50,7 @@ bool HelloWorld::init()
 	
 	mode = Mode::Dig;
 	textMode = Label::createWithSystemFont("Dig", "HiraKakuProN-W6", 24);
-	textMode->setPosition(Point(820, 520));
+	textMode->setPosition(cocos2d::Point(820, 520));
 	textMode->setAnchorPoint({0, 1});
 	this->addChild(textMode);
 

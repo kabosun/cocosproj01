@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include "Entity.h"
 #include "EntityRegistry.h"
+#include "Vector.h"
 
 namespace ecs2
 {

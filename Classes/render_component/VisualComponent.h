@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cocos2d.h"
 #include <vector>
 #include "../ecs/Entity.h"
 #include "../ecs/Component.h"
@@ -9,12 +8,18 @@ using namespace ecs2;
 
 class TransformComponent;
 
+namespace cocos2d
+{
+	class Node;
+	class Sprite;
+}
+
 // コンポーネント
 struct _VisualComponent
 {
 	// ユーザー定義
 	std::vector<std::string> TextureName;
-	std::vector<cocos2d::Rect> Rect;
+	std::vector<game::Rect> Rect;
 	std::vector<cocos2d::Sprite*> Sprite;
 };
 
@@ -46,10 +51,7 @@ public:
 		m_Data.TextureName[handle.index] = name;
 	}
 	
-	void SetRect(ComponentHandle handle, int x, int y, int w, int h)
-	{
-		m_Data.Rect[handle.index].setRect(x, y, w, h);
-	}
+	void SetRect(ComponentHandle handle, int x, int y, int w, int h);
 	
 	void OnCreate(int index) override;
 	
@@ -59,21 +61,8 @@ public:
 	
 	
 protected:
-	void Reset(int index) override
-	{
-		m_Data.TextureName[index] = "tile.png";
-		int chip = 8;
-		m_Data.Rect[index] = cocos2d::Rect(chip%8*16, chip/8*16, 16, 16);
-		m_Data.Sprite[index] = nullptr;
-	}
+	void Reset(int index) override;
 	
-	void Compact(int index, int lastIndex) override
-	{
-		m_Data.TextureName[index] = m_Data.TextureName[lastIndex];
-		m_Data.Rect[index] = m_Data.Rect[lastIndex];
-		m_Data.Sprite[index] = m_Data.Sprite[lastIndex];
-		
-		m_Data.Sprite[lastIndex] = nullptr;		// 参照カウンタなので参照は残さない
-	}
+	void Compact(int index, int lastIndex) override;
 };
 

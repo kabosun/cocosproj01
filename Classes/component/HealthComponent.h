@@ -51,28 +51,3 @@ protected:
 		m_Data.Health[index] = m_Data.Health[lastIndex];
 	}
 };
-
-class HealthFacade final
-{
-	HealthComponent* component;
-	ComponentHandle handle;
-
-public:
-	HealthFacade(Entity entity, HealthComponent* component)
-	{
-		this->component = component;
-		this->handle = component->GetHandle(entity);
-	}
-
-	Health GetHealth() const
-	{
-		return component->GetHealth(handle);
-	}
-
-	HealthFacade& SetHealth(const Health& health)
-	{
-		component->SetHealth(handle, health);
-		return *this;
-	}
-};
-

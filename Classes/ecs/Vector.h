@@ -1,5 +1,38 @@
 #pragma once
 
+namespace game
+{
+	struct Point
+	{
+		float x;
+		float y;
+	};
+
+	struct Size
+	{
+		float width;
+		float height;
+	};
+
+	struct Rect
+	{
+		Point origin;
+		Size size;
+
+		Rect()
+			: origin({ 0, 0 }), size({ 0, 0 })
+		{}
+
+		Rect(float x, float y, float width, float height)
+		{
+			origin.x = x;
+			origin.y = y;
+			size.width = width;
+			size.height = height;
+		}
+	};
+}
+
 template<typename T>
 struct Vector2
 {

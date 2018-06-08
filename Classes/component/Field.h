@@ -2,8 +2,13 @@
 
 #include <vector>
 #include <functional>
-#include "cocos2d.h"
 #include "../ecs/Entity.h"
+
+namespace cocos2d
+{
+	class Node;
+	class Sprite;
+}
 
 class Field
 {
@@ -19,7 +24,7 @@ class Field
 	cocos2d::Node* m_Root;
 	
 	cocos2d::Node* m_Scene;
-	cocos2d::TMXTiledMap* visual;
+	//cocos2d::TMXTiledMap* visual;
 	
 public:
 	void Initialize(cocos2d::Node* scene);

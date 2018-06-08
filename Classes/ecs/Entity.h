@@ -4,7 +4,6 @@
 #include <random>
 #include <vector>
 #include <typeindex>
-#include "Vector.h"
 
 namespace ecs2
 {
