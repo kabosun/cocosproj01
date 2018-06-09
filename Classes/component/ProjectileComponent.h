@@ -15,7 +15,7 @@ struct _ProjectileComponent
 	std::vector<float> Angle;
 };
 
-class ProjectileComponent : public Component, public IUpdatable
+class ProjectileComponent : public Component, public IUpdatable, public ICollideEventListener
 {
 	_ProjectileComponent m_Data;
 	TransformComponent* Transform;
@@ -33,6 +33,8 @@ public:
 	{
 		Transform = transform;
 	}
+	
+	void OnCollideEnter(Entity entity1, Entity entity2) override;
 	
 	void Update(EntityRegistry& registry, float dt) override;
 	

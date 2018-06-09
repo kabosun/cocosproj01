@@ -2,26 +2,35 @@
 #include "TransformComponent.h"
 #include "../ecs/ComponentRegistry.h"
 
+void RigidBodyComponent::OnCreate(int index)
+{
+	assert(Transform);
+	
+	Entity entity = GetEntity(index);
+	auto handle = Transform->GetHandle(entity);
+	auto position = Transform->GetPosition(handle);
+	
+	m_Data.RigidBody[index].entity = entity;
+	m_Data.RigidBody[index].shape = std::make_shared<RectShape>(position.X, position.Y, 16, 16);
+	physics->AddBody(m_Data.RigidBody[index]);
+}
+
 void RigidBodyComponent::Update(EntityRegistry& registry, float dt)
 {
 	for (int i = 0; i<Size(); i++)
 	{
-		auto handle = Transform->GetHandle(GetEntity(i));
-		Vector2f position = Transform->GetPosition(handle);
-
-		Vector2f& velocity = m_Data.Velocity[i];
-		//Vector3f& accelaration = m_Data.Acceleration[i];
-		//m_Data.Velocity[i] *= m_Data.Friction[i];
-
-		//velocity += accelaration * dt;
-		position += velocity * dt;
-
-		Transform->SetPosition(handle, position);
 	}
 }
 
-void RigidBodyComponent::OnCreateEntity(Entity entity)
-{}
-
-void RigidBodyComponent::OnRemoveEntity(Entity entity)
-{}
+void RigidBodyComponent::GC(const EntityRegistry& registry)
+{
+	for (int i = 0; i < Size(); i++)
+	{
+		Entity entity = GetEntity(i);
+		if (!registry.Alive(entity))
+		{
+			physics->RemoveBody(entity);
+			Remove(i);
+		}
+	}
+}

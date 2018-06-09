@@ -7,7 +7,9 @@ static const auto FILENAME = "tile.png";
 static const int TILE_WIDTH = 128 / 16;
 static const int TILECHIP_SIZE = 16;
 static const int WIDTH = 400;
-static const int TILE_SIZE = WIDTH / TILECHIP_SIZE;
+static const int HEIGHT = 270;
+static const int FILED_WIDTH = WIDTH / TILECHIP_SIZE;
+static const int FILED_HEIGHT = HEIGHT / TILECHIP_SIZE;
 static const int MENU_SIZE = 32;
 
 inline static Sprite* CreateSprite(const std::string& filename, Rect rect)
@@ -28,24 +30,24 @@ inline static Sprite* SetTextureRect(Sprite* sprite, Rect rect)
 
 inline int GetFieldX(int index)
 {
-	return index%TILE_SIZE*TILECHIP_SIZE;
+	return index%FILED_WIDTH*TILECHIP_SIZE;
 }
 
 inline int GetFieldY(int index)
 {
-	return index/TILE_SIZE*TILECHIP_SIZE;
+	return index/FILED_WIDTH*TILECHIP_SIZE;
 }
 
 inline int GetFieldIndex(float x, float y, int dx=0, int dy=0)
 {
-	return ((int)(x)/TILECHIP_SIZE + dx) + ((int)(y)/TILECHIP_SIZE + dy)*TILE_SIZE;
+	return ((int)(x)/TILECHIP_SIZE + dx) + ((int)(y)/TILECHIP_SIZE + dy)*FILED_WIDTH;
 }
 
 void Field::Initialize(Node* scene)
 {
 	m_Scene = scene;
-	m_Map.resize(TILE_SIZE * TILE_SIZE);
-	m_Tiles.resize(TILE_SIZE * TILE_SIZE);
+	m_Map.resize(FILED_WIDTH * FILED_HEIGHT);
+	m_Tiles.resize(FILED_WIDTH * FILED_HEIGHT);
 	
 	m_Root = Sprite::create();
 	m_Root->setPosition(0, 0);
@@ -61,17 +63,27 @@ void Field::Initialize(Node* scene)
 	
 	for (int i=0; i<m_Map.size(); i++)
 	{
+		int tile = 0;
 		int x = GetFieldX(i);
 		int y = GetFieldY(i);
 		
-		int cx = m_Chips[1] % TILE_WIDTH;
-		int cy = m_Chips[1] / TILE_WIDTH;
-		Rect rect = Rect(cx*TILECHIP_SIZE, cy*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
+		// wall
+		if (i % FILED_WIDTH == 0
+			|| i / FILED_WIDTH == 0
+			|| i % FILED_WIDTH == FILED_WIDTH-1
+			|| i / FILED_WIDTH == FILED_HEIGHT-1)
+		{
+			tile = 1;
+		}
 		
+		int cx = m_Chips[tile] % TILE_WIDTH;
+		int cy = m_Chips[tile] / TILE_WIDTH;
+		Rect rect = Rect(cx*TILECHIP_SIZE, cy*TILECHIP_SIZE, TILECHIP_SIZE, TILECHIP_SIZE);
 		Sprite* chip = CreateSprite(FILENAME, rect);
+		
 		chip->setPosition(Vec2(x, y));
 		
-		m_Map[i] = 1;
+		m_Map[i] = tile;
 		m_Tiles[i] = chip;
 		
 		m_Root->addChild(m_Tiles[i]);
@@ -143,6 +155,7 @@ int Field::Dig(float x, float y)
 
 		switch (m_Chips[m_Tile])
 		{
+			case 3:
 			case 5:
 				break;
 			default:

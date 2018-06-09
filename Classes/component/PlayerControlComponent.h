@@ -9,14 +9,14 @@ using namespace ecs2;
 
 class TransformComponent;
 
-struct _MoveComponent
+struct _PlayerControlComponent
 {
 	std::vector<float> Speed;
 };
 
-class MoveComponent : public Component, public IUpdatable
+class PlayerControlComponent : public Component, public IUpdatable
 {
-	_MoveComponent m_Data;
+	_PlayerControlComponent m_Data;
 	TransformComponent* Transform = nullptr;
 	Input* input = nullptr;
 

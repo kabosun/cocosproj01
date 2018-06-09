@@ -8,7 +8,6 @@
 
 namespace ecs2
 {
-	
 	static const int MINIMUM_FREE_INDICES = 1024;
 
 	class IEntityEventListener
@@ -17,21 +16,38 @@ namespace ecs2
 		virtual void OnCreateEntity(Entity entity) = 0;
 		virtual void OnRemoveEntity(Entity entity) = 0;
 	};
+	
+	class ICollideEventListener
+	{
+	public:
+		virtual void OnCollideEnter(Entity entity1, Entity entity2) = 0;
+	};
 
 	class EntityEvent
 	{
 		std::list<IEntityEventListener*> m_EventListener;
-
+		std::list<ICollideEventListener*> m_CollideEventListener;
+		
 	public:
 
 		void AddEventListener(IEntityEventListener* listener)
 		{
 			m_EventListener.push_back(listener);
 		}
+		
+		void AddEventListener(ICollideEventListener* listener)
+		{
+			m_CollideEventListener.push_back(listener);
+		}
 
 		void RemoveListener(IEntityEventListener* listener)
 		{
 			m_EventListener.remove(listener);
+		}
+		
+		void RemoveListener(ICollideEventListener* listener)
+		{
+			m_CollideEventListener.remove(listener);
 		}
 
 		void SendCreateEntityEvent(Entity e)
@@ -41,13 +57,20 @@ namespace ecs2
 				listener->OnCreateEntity(e);
 			}
 		}
-
-
+		
 		void SendRemoveEntityEvent(Entity e)
 		{
 			for (auto&& listener : m_EventListener)
 			{
 				listener->OnRemoveEntity(e);
+			}
+		}
+		
+		void SendCollideEvent(Entity entity1, Entity entity2)
+		{
+			for (auto&& listener : m_CollideEventListener)
+			{
+				listener->OnCollideEnter(entity1, entity2);
 			}
 		}
 	};

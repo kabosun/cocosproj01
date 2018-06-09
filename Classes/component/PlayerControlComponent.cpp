@@ -1,8 +1,8 @@
-#include "MoveComponent.h"
+#include "PlayerControlComponent.h"
 #include "TransformComponent.h"
 #include <algorithm>
 
-void MoveComponent::Update(EntityRegistry& registry, float dt)
+void PlayerControlComponent::Update(EntityRegistry& registry, float dt)
 {
 	assert(Transform);
 	assert(input);
@@ -20,26 +20,46 @@ void MoveComponent::Update(EntityRegistry& registry, float dt)
 		auto l = input->GetLocation();
 		if (!l.empty()) location = l.back();
 		
-		int d = 0;
+		int dx = 0;
+		int dy = 0;
 		
 		if ((keyState & (1 << 1)) > 1)
 		{
-			d = -1;
+			dx = -1;
 		}
 		if ((keyState & (1 << 2)) > 1)
 		{
-			d = 1;
+			dx = 1;
 		}
+		if ((keyState & (1 << 3)) > 1)
+		{
+			dy = 1;
+		}
+		if ((keyState & (1 << 4)) > 1)
+		{
+			dy = -1;
+		}
+#if 1
 		if ((keyState & (1 << 16)) > 1 || (keyState & (1 << 17)) > 1)
 		{
 			if (location.X < position.X)
 			{
-				d = -1;
+				dx = -1;
 			}
 			
 			if (location.X > position.X)
 			{
-				d = 1;
+				dx = 1;
+			}
+			
+			if (location.Y < position.Y)
+			{
+				dy = -1;
+			}
+			
+			if (location.Y > position.Y)
+			{
+				dy = 1;
 			}
 			
 			if (position.X-15 < location.X && position.X +15 > location.X
@@ -61,15 +81,16 @@ void MoveComponent::Update(EntityRegistry& registry, float dt)
 			}
 			//printf("x:%f y:%f x:%f y:%f sx:%f sy:%f\n", position.X, position.Y, location.X, location.Y, scale.X, scale.Y);
 		}
-		
-		position.X += m_Data.Speed[i] * dt * d;
+#endif
+		position.X += m_Data.Speed[i] * dx * dt;
+		position.Y += m_Data.Speed[i] * dy * dt;
 		
 		Transform->SetPosition(transformHandle, position);
 		Transform->SetScale(transformHandle, scale);
 	}
 }
 
-void MoveComponent::GC(const EntityRegistry& registry)
+void PlayerControlComponent::GC(const EntityRegistry& registry)
 {
 	for (int i = 0; i < Size(); i++)
 	{
@@ -81,12 +102,12 @@ void MoveComponent::GC(const EntityRegistry& registry)
 	}
 }
 
-void MoveComponent::Reset(int index)
+void PlayerControlComponent::Reset(int index)
 {
-	m_Data.Speed[index] = 300;
+	m_Data.Speed[index] = 100;
 }
 
-void MoveComponent::Compact(int index, int lastIndex)
+void PlayerControlComponent::Compact(int index, int lastIndex)
 {
 	m_Data.Speed[index] = m_Data.Speed[lastIndex];
 }

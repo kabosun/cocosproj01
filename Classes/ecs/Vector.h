@@ -12,6 +12,14 @@ namespace game
 	{
 		float width;
 		float height;
+		
+		Size()
+		: width(0), height(0)
+		{}
+		
+		Size(float width, float height)
+		: width(width), height(height)
+		{}
 	};
 
 	struct Rect
@@ -85,6 +93,24 @@ struct Vector2
 		Y /= v;
 
 		return *this;
+	}
+	
+	T Length() const
+	{
+		if (X == 0 && Y == 0) return 0;
+		return std::sqrt(X * X + Y * Y);
+	}
+	
+	Vector2<T> Normal() const
+	{
+		T length = Length();
+		if (length == 0)
+		{
+			return Vector2<T>(0, 0);
+		}
+		
+		T mag = 1 / length;
+		return (*this) * mag;
 	}
 };
 

@@ -48,10 +48,35 @@ bool HelloWorld::init()
     menu->setPosition(Vec2::ZERO);
     this->addChild(menu, 1);
 	
+	auto moveItem = MenuItemImage::create(
+										   "CloseNormal.png",
+										   "CloseSelected.png",
+										  [this](Ref* pSender)
+	{
+		switch (mode)
+		{
+			case Mode::Dig:
+				mode = Mode::Normal;
+				textMode->setString("Mov");
+				break;
+			default:
+				mode = Mode::Dig;
+				textMode->setString("Dig");
+				break;
+		}
+	});
+	
+	moveItem->setPosition(Vec2(origin.x + visibleSize.width - moveItem->getContentSize().width/2,
+								origin.y + moveItem->getContentSize().height*2));
+	
+	menu->addChild(moveItem);
+	
+	
 	mode = Mode::Dig;
 	textMode = Label::createWithSystemFont("Dig", "HiraKakuProN-W6", 24);
-	textMode->setPosition(cocos2d::Point(820, 520));
-	textMode->setAnchorPoint({0, 1});
+	textMode->setPosition(cocos2d::Point(origin.x + visibleSize.width - textMode->getContentSize().width,
+										 origin.y + visibleSize.height - textMode->getContentSize().height/2));
+	textMode->setAnchorPoint({0.5, 1});
 	this->addChild(textMode);
 
     /////////////////////////////
@@ -69,6 +94,12 @@ bool HelloWorld::init()
 			case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
 				input.KeyPress(2);
 				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+				input.KeyPress(3);
+				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+				input.KeyPress(4);
+				break;
 			default:
 				break;
 		}
@@ -82,6 +113,12 @@ bool HelloWorld::init()
 			case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
 				input.KeyRelease(2);
 				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+				input.KeyRelease(3);
+				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+				input.KeyRelease(4);
+				break;
 			default:
 				break;
 		}
@@ -93,7 +130,6 @@ bool HelloWorld::init()
 	touch->onTouchBegan = [this](cocos2d::Touch* touch, cocos2d::Event* event)
 	{
 		auto location = touch->getLocation();
-		input.TouchBegin({location.x, location.y});
 		
 		switch (mode)
 		{
@@ -101,6 +137,7 @@ bool HelloWorld::init()
 				field.Dig(location.x, location.y);
 				break;
 			default:
+				input.TouchBegin({location.x, location.y});
 				break;
 		}
 		
@@ -110,8 +147,6 @@ bool HelloWorld::init()
 	touch->onTouchMoved = [this](cocos2d::Touch* touch, cocos2d::Event* event)
 	{
 		auto location = touch->getLocation();
-		input.TouchMove({location.x, location.y});
-		
 		
 		switch (mode)
 		{
@@ -119,6 +154,7 @@ bool HelloWorld::init()
 				field.Dig(location.x, location.y);
 				break;
 			default:
+				input.TouchMove({location.x, location.y});
 				break;
 		}
 		
@@ -128,27 +164,21 @@ bool HelloWorld::init()
 	touch->onTouchEnded = [this](cocos2d::Touch* touch, cocos2d::Event* event)
 	{
 		auto location = touch->getLocation();
-		input.TouchEnd({location.x, location.y});
 		
-		int menu = field.SelectTile(location.x, location.y);
-		printf("menu:%d\n", menu);
-		
-		if (menu < 0 && false)
+		switch (mode)
 		{
-			switch (mode)
-			{
-				case Mode::Dig:
-					mode = Mode::Normal;
-					textMode->setString("Normal");
-					break;
-				default:
-					mode = Mode::Dig;
-					textMode->setString("Dig");
-					break;
-			}
+			case Mode::Dig:
+				field.SelectTile(location.x, location.y);
+				break;
+			default:
+				input.TouchEnd({location.x, location.y});
+				break;
 		}
 	};
 	getEventDispatcher()->addEventListenerWithSceneGraphPriority(touch, this);
+	
+	// 物理エンジン
+	physics.Initialize();
 	
 	// フィールド
 	field.Initialize(this);
@@ -160,23 +190,30 @@ bool HelloWorld::init()
 	
 	auto&& transformComponent = components.AddComponent<TransformComponent>();
 	transformComponent->Initialize(entities, maxSize);
+	physics.SetSharedComponent(transformComponent.get());
+	
+	auto&& rigidbodyComponent = components.AddComponent<RigidBodyComponent>();
+	rigidbodyComponent->Initialize(entities, maxSize);
+	rigidbodyComponent->SetSharedComponent(transformComponent.get());
+	rigidbodyComponent->SetPhysics(&physics);
 	
 	auto&& spawnComponent = components.AddUpdatableComponent<SpawnerComponent>();
 	spawnComponent->Initialize(entities, maxSize);
 	
-	auto&& moveComponent = components.AddUpdatableComponent<MoveComponent>();
-	moveComponent->Initialize(entities, maxSize);
-	moveComponent->SetSharedComponent(transformComponent.get());
-	moveComponent->SetInput(&input);
+	auto&& playerControlComponent = components.AddUpdatableComponent<PlayerControlComponent>();
+	playerControlComponent->Initialize(entities, maxSize);
+	playerControlComponent->SetSharedComponent(transformComponent.get());
+	playerControlComponent->SetInput(&input);
 	
 	auto&& projectileComponent = components.AddUpdatableComponent<ProjectileComponent>();
 	projectileComponent->Initialize(entities, maxSize);
 	projectileComponent->SetSharedComponent(transformComponent.get());
+	entities.AddEventListener(projectileComponent.get());
 	
 	auto&& lifetimeComponent = components.AddUpdatableComponent<LifetimeComponent>();
 	lifetimeComponent->Initialize(entities, maxSize);
 
-	auto&& visualComponent = components.AddUpdatableComponent<VisualComponent>();
+	auto&& visualComponent = components.AddPostUpdatableComponent<VisualComponent>();
 	visualComponent->Initialize(entities, maxSize, this);
 	visualComponent->SetSharedComponent(transformComponent.get());
 	
@@ -267,6 +304,11 @@ bool HelloWorld::init()
 	addChild(sp);
 #endif
 	
+	physics.SetOnCollideFunc([this](Entity entity1, Entity entity2)
+	{
+		entities.SendCollideEvent(entity1, entity2);
+	});
+	
 	field.SetCreateTileFunc([this](int id, int index, int x, int y) {
 		
 		if (m_TileEntities.count(index) > 0)
@@ -279,19 +321,79 @@ bool HelloWorld::init()
 		
 		switch(id)
 		{
-			case 5:
+			case 1:
 			{
+				// wall
 				Archetype archetype = {
 					typeid(TransformComponent),
+					typeid(RigidBodyComponent),
+				};
+				auto&& transformComponent = components.GetComponent<TransformComponent>();
+				auto&& rigidbodyComponent = components.GetComponent<RigidBodyComponent>();
+				
+				Entity entity = components.CreateEntity(archetype);
+				m_TileEntities[index] = entity;
+				{
+					auto handle = rigidbodyComponent->GetHandle(entity);
+					rigidbodyComponent->SetGroup(handle, 1000);
+				}
+				{
+					auto handle = transformComponent->GetHandle(entity);
+					transformComponent->SetPosition(handle, Vector2f(x-8, y-8));
+				}
+				break;
+			}
+			case 3:
+			{
+				// player
+				Archetype archetype = {
+					typeid(TransformComponent),
+					typeid(RigidBodyComponent),
+					typeid(PlayerControlComponent),
+					typeid(VisualComponent),
+				};
+				auto&& transformComponent = components.GetComponent<TransformComponent>();
+				auto&& rigidbodyComponent = components.GetComponent<RigidBodyComponent>();
+				auto&& visualComponent = components.GetComponent<VisualComponent>();
+				
+				Entity entity = components.CreateEntity(archetype);
+				m_TileEntities[index] = entity;
+				{
+					auto handle = rigidbodyComponent->GetHandle(entity);
+					rigidbodyComponent->SetGroup(handle, 1);
+				}
+				{
+					auto handle = transformComponent->GetHandle(entity);
+					transformComponent->SetPosition(handle, Vector2f(x-8, y-8));
+				}
+				{
+					auto handle = visualComponent->GetHandle(entity);
+					visualComponent->SetRect(handle, id % 8 * 16, id / 8 * 16, 16, 16);
+				}
+				
+				break;
+			}
+			case 5:
+			{
+				// trap
+				Archetype archetype = {
+					typeid(TransformComponent),
+					typeid(RigidBodyComponent),
 					typeid(SpawnerComponent),
 					typeid(VisualComponent),
 				};
 				{
 					auto&& transformComponent = components.GetComponent<TransformComponent>();
+					auto&& rigidbodyComponent = components.GetComponent<RigidBodyComponent>();
 					auto&& spawnComponent = components.GetComponent<SpawnerComponent>();
 					auto&& visualComponent = components.GetComponent<VisualComponent>();
 					
 					Entity entity = components.CreateEntity(archetype);
+					m_TileEntities[index] = entity;
+					{
+						auto handle = rigidbodyComponent->GetHandle(entity);
+						rigidbodyComponent->SetGroup(handle, 2);
+					}
 					{
 						auto handle = transformComponent->GetHandle(entity);
 						transformComponent->SetPosition(handle, Vector2f(x-8, y-8));
@@ -303,6 +405,7 @@ bool HelloWorld::init()
 					{
 						Archetype archetype = {
 							typeid(TransformComponent),
+							typeid(RigidBodyComponent),
 							typeid(LifetimeComponent),
 							typeid(ProjectileComponent),
 							typeid(VisualComponent),
@@ -310,8 +413,6 @@ bool HelloWorld::init()
 						auto handle = spawnComponent->GetHandle(entity);
 						spawnComponent->SetArchetype(handle, archetype);
 					}
-					
-					m_TileEntities[index] = entity;
 				}
 				break;
 			}
@@ -327,6 +428,8 @@ bool HelloWorld::init()
 void HelloWorld::update(float delta)
 {
 	components.Update(delta);
+	physics.Update(delta);
+	components.PostUpdate(delta);
 	components.GC();
 }
 

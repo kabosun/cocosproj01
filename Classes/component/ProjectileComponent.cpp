@@ -1,5 +1,6 @@
 #include "ProjectileComponent.h"
 #include "TransformComponent.h"
+#include "../ecs/ComponentRegistry.h"
 
 void ProjectileComponent::Update(EntityRegistry& registry, float dt)
 {
@@ -17,6 +18,14 @@ void ProjectileComponent::Update(EntityRegistry& registry, float dt)
 		
 		Transform->SetPosition(handle, position);
 	}
+}
+
+void ProjectileComponent::OnCollideEnter(Entity entity1, Entity entity2)
+{
+	if (!HasComponent(entity1)) return;
+	
+	printf("hit! 1:%d 2:%d\n", entity1.Index(), entity2.Index());
+	ComponentRegistry()->RemoveEntity(entity1);
 }
 
 void ProjectileComponent::GC(const EntityRegistry& registry)

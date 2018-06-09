@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 #include "ECS.h"
 #include "component/Field.h"
+#include "component/Physics.h"
 
 enum class Mode
 {
@@ -17,6 +18,7 @@ class HelloWorld : public cocos2d::Layer
 	ComponentRegistry components;
 	Input input;
 	Field field;
+	Physics physics;
 	Mode mode = Mode::Normal;
 	cocos2d::Label* textMode;
 	
