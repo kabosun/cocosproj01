@@ -1,19 +1,16 @@
 #include "PlayerControlComponent.h"
-#include "TransformComponent.h"
+#include "RigidBodyComponent.h"
 #include <algorithm>
 
 void PlayerControlComponent::Update(EntityRegistry& registry, float dt)
 {
-	assert(Transform);
+	assert(RigidBody);
 	assert(input);
 	
 	for (int i = 0; i < Size(); i++)
 	{
-		//if (!registry.Alive(GetEntity(i))) continue;
-		
-		auto transformHandle = Transform->GetHandle(GetEntity(i));
-		Vector2f position = Transform->GetPosition(transformHandle);
-		Vector2f scale = Transform->GetScale(transformHandle);
+		auto handle = RigidBody->GetHandle(GetEntity(i));
+		Vector2f velocity = RigidBody->GetVelocity(handle);
 		
 		int keyState = input->GetKeyState();
 		Vector2f location;
@@ -39,7 +36,7 @@ void PlayerControlComponent::Update(EntityRegistry& registry, float dt)
 		{
 			dy = -1;
 		}
-#if 1
+#if 0
 		if ((keyState & (1 << 16)) > 1 || (keyState & (1 << 17)) > 1)
 		{
 			if (location.X < position.X)
@@ -82,11 +79,10 @@ void PlayerControlComponent::Update(EntityRegistry& registry, float dt)
 			//printf("x:%f y:%f x:%f y:%f sx:%f sy:%f\n", position.X, position.Y, location.X, location.Y, scale.X, scale.Y);
 		}
 #endif
-		position.X += m_Data.Speed[i] * dx * dt;
-		position.Y += m_Data.Speed[i] * dy * dt;
+		velocity.X = m_Data.Speed[i] * dx;
+		velocity.Y = m_Data.Speed[i] * dy;
 		
-		Transform->SetPosition(transformHandle, position);
-		Transform->SetScale(transformHandle, scale);
+		RigidBody->SetVelocity(handle, velocity);
 	}
 }
 
@@ -104,7 +100,7 @@ void PlayerControlComponent::GC(const EntityRegistry& registry)
 
 void PlayerControlComponent::Reset(int index)
 {
-	m_Data.Speed[index] = 100;
+	m_Data.Speed[index] = 60;
 }
 
 void PlayerControlComponent::Compact(int index, int lastIndex)

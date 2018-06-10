@@ -7,7 +7,7 @@
 
 using namespace ecs2;
 
-class TransformComponent;
+class RigidBodyComponent;
 
 struct _PlayerControlComponent
 {
@@ -17,7 +17,7 @@ struct _PlayerControlComponent
 class PlayerControlComponent : public Component, public IUpdatable
 {
 	_PlayerControlComponent m_Data;
-	TransformComponent* Transform = nullptr;
+	RigidBodyComponent* RigidBody = nullptr;
 	Input* input = nullptr;
 
 public:
@@ -28,9 +28,9 @@ public:
 		m_Data.Speed.resize(maxSize);
 	}
 
-	void SetSharedComponent(TransformComponent* transform)
+	void SetSharedComponent(RigidBodyComponent* rigidBody)
 	{
-		Transform = transform;
+		RigidBody = rigidBody;
 	}
 	
 	void SetInput(Input* input)

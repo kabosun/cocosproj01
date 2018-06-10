@@ -27,8 +27,9 @@ void Physics::Update(float dt)
 		
 		// 速度を更新する
 		RigidBody& body = RigidBodys[index];
-		body.Velocity.X = (shape->rect.origin.x - PrevRigidBodyPositions[index].x) / PrevDelta;
-		body.Velocity.Y = (shape->rect.origin.y - PrevRigidBodyPositions[index].y) / PrevDelta;
+		body.Velocity.X += (shape->rect.origin.x - PrevRigidBodyPositions[index].x) / PrevDelta;
+		body.Velocity.Y += (shape->rect.origin.y - PrevRigidBodyPositions[index].y) / PrevDelta;
+		body.Velocity *= 0.3;
 		
 #if 0
 		if (RigidBodys[index].Group == 1)
@@ -112,6 +113,10 @@ void Physics::Update(float dt)
 				auto position = Transform->GetPosition(handle);
 				
 				Vector2f velocity = RigidBodys[n].Velocity.Normal();
+				if (velocity.X == 0 && velocity.Y == 0)
+				{
+					continue;
+				}
 				position.X += size.width * velocity.X;
 				position.Y += size.height * velocity.Y;
 				Transform->SetPosition(handle, position);
@@ -138,12 +143,14 @@ void Physics::Update(float dt)
 	PrevDelta = dt;
 }
 
-void Physics::AddBody(RigidBody& body)
+RigidBody& Physics::AddBody(RigidBody& body)
 {
 	RigidBodys.push_back(body);
 	PrevRigidBodyPositions.push_back(body.shape->rect.origin);
 	
 	RigidBodysLUT[body.entity.Id] = RigidBodys.size()-1;
+	
+	return RigidBodys[RigidBodys.size()-1];
 }
 
 void Physics::RemoveBody(Entity entity)

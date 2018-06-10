@@ -14,7 +14,7 @@ class TransformComponent;
 struct _RigidBodyComponent
 {
 	// ユーザー定義
-	std::vector<RigidBody> RigidBody;
+	std::vector<RigidBody*> RigidBody;
 };
 
 
@@ -51,51 +51,48 @@ public:
 
 	int GetGroup(ComponentHandle handle)
 	{
-		return m_Data.RigidBody[handle.index].Group;
+		return m_Data.RigidBody[handle.index]->Group;
 	}
 	
 	void SetGroup(ComponentHandle handle, int group)
 	{
-		m_Data.RigidBody[handle.index].Group = group;
+		m_Data.RigidBody[handle.index]->Group = group;
 	}
 	
 	Vector2f GetVelocity(ComponentHandle handle)
 	{
-		return m_Data.RigidBody[handle.index].Velocity;
+		return m_Data.RigidBody[handle.index]->Velocity;
 	}
 
 	void SetVelocity(ComponentHandle handle, Vector2f velocity)
 	{
-		m_Data.RigidBody[handle.index].Velocity = velocity;
+		m_Data.RigidBody[handle.index]->Velocity = velocity;
 	}
 
 	Vector2f GetAcceleration(ComponentHandle handle)
 	{
-		return m_Data.RigidBody[handle.index].Acceleration;
+		return m_Data.RigidBody[handle.index]->Acceleration;
 	}
 
 	void SetAcceleration(ComponentHandle handle, Vector2f acceleration)
 	{
-		m_Data.RigidBody[handle.index].Acceleration = acceleration;
+		m_Data.RigidBody[handle.index]->Acceleration = acceleration;
 	}
 	
 	float GetFriction(ComponentHandle handle)
 	{
-		return m_Data.RigidBody[handle.index].Friction;
+		return m_Data.RigidBody[handle.index]->Friction;
 	}
 	
 	void SetFriction(ComponentHandle handle, float friction)
 	{
-		m_Data.RigidBody[handle.index].Friction = friction;
+		m_Data.RigidBody[handle.index]->Friction = friction;
 	}
 	
 protected:
 	void Reset(int index) override
 	{
-		m_Data.RigidBody[index].Group = 0;
-		m_Data.RigidBody[index].Velocity = Vector2f();
-		m_Data.RigidBody[index].Acceleration = Vector2f();
-		m_Data.RigidBody[index].Friction = 1;
+		m_Data.RigidBody[index] = nullptr;
 	}
 	
 	void Compact(int index, int lastIndex) override

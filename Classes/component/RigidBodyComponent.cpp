@@ -10,9 +10,10 @@ void RigidBodyComponent::OnCreate(int index)
 	auto handle = Transform->GetHandle(entity);
 	auto position = Transform->GetPosition(handle);
 	
-	m_Data.RigidBody[index].entity = entity;
-	m_Data.RigidBody[index].shape = std::make_shared<RectShape>(position.X, position.Y, 16, 16);
-	physics->AddBody(m_Data.RigidBody[index]);
+	RigidBody body;
+	body.entity = entity;
+	body.shape = std::make_shared<RectShape>(position.X, position.Y, 16, 16);
+	physics->AddBody(body);
 }
 
 void RigidBodyComponent::Update(EntityRegistry& registry, float dt)

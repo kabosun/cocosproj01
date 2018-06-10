@@ -83,7 +83,7 @@ public:
 	
 	void Update(float dt);
 	
-	void AddBody(RigidBody& body);
+	RigidBody& AddBody(RigidBody& body);
 	
 	void RemoveBody(Entity entity);
 	

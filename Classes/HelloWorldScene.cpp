@@ -81,6 +81,9 @@ bool HelloWorld::init()
 
     /////////////////////////////
     // 3. add your codes below...
+	
+	newecsdemo.Init();
+	
 	input.Reset();
 	
 	// キーイベント
@@ -202,7 +205,7 @@ bool HelloWorld::init()
 	
 	auto&& playerControlComponent = components.AddUpdatableComponent<PlayerControlComponent>();
 	playerControlComponent->Initialize(entities, maxSize);
-	playerControlComponent->SetSharedComponent(transformComponent.get());
+	playerControlComponent->SetSharedComponent(rigidbodyComponent.get());
 	playerControlComponent->SetInput(&input);
 	
 	auto&& projectileComponent = components.AddUpdatableComponent<ProjectileComponent>();
@@ -427,6 +430,8 @@ bool HelloWorld::init()
 
 void HelloWorld::update(float delta)
 {
+	newecsdemo.Update(delta);
+	
 	components.Update(delta);
 	physics.Update(delta);
 	components.PostUpdate(delta);

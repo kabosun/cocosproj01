@@ -5,6 +5,7 @@
 #include "ECS.h"
 #include "component/Field.h"
 #include "component/Physics.h"
+#include "newecs/NewECSSample.h"
 
 enum class Mode
 {
@@ -23,6 +24,8 @@ class HelloWorld : public cocos2d::Layer
 	cocos2d::Label* textMode;
 	
 	std::unordered_map<int, Entity> m_TileEntities;
+	
+	NewECSSample newecsdemo;
 	
 public:
     static cocos2d::Scene* createScene();
