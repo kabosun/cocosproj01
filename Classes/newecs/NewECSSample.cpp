@@ -6,7 +6,7 @@ using namespace ecs;
 void NewECSSample::Init()
 {
 	manager.Init();
-	manager.RegisterSystem(new MoveSystem());
+	manager.RegisterSystem<MoveSystem>();
 	
 	std::vector<Entity> list;
 	for (int i=0; i<5; i++)
@@ -20,6 +20,8 @@ void NewECSSample::Init()
 	
 	manager.RemoveEntity(list[0]);
 	manager.RemoveEntity(list[4]);
+	
+	manager.CreateArchetype<Position, Sprite>();
 }
 
 void NewECSSample::Update(float delta)

@@ -10,6 +10,7 @@ class MoveSystem : public ecs::System
 	Position* m_Position;
 	Sprite* m_Sprite;
 	
+public:
 	void AssignComponent(ecs::EntityManager* manager) override;
 	
 	void Update(ecs::EntityManager* manager, float delta) override;

@@ -3,6 +3,14 @@
 
 namespace ecs
 {
+	EntityManager::~EntityManager()
+	{
+		for (System* system : m_Systems)
+		{
+			delete system;
+		}
+	}
+	
 	Entity EntityManager::CreateEntity()
 	{
 		int index = 0;
@@ -42,11 +50,6 @@ namespace ecs
 			
 			m_allocator.free(entity);
 		}
-	}
-	
-	void EntityManager::RegisterSystem(System* system)
-	{
-		m_Systems.push_back(system);
 	}
 	
 	void EntityManager::Update(float delta)

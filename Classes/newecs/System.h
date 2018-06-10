@@ -6,7 +6,12 @@ namespace ecs
 	class System
 	{
 	public:
+		virtual ~System()
+		{}
+		
 		virtual void AssignComponent(ecs::EntityManager* manager) = 0;
-		virtual void Update(EntityManager* manager, float delta);
+		
+		virtual void Update(EntityManager* manager, float delta)
+		{}
 	};
 }

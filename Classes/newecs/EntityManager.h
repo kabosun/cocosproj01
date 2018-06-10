@@ -4,6 +4,7 @@
 #include <deque>
 #include <list>
 #include <functional>
+#include <unordered_map>
 #include "Entity.h"
 #include "ComponentAllocator.h"
 
@@ -21,31 +22,11 @@ namespace ecs
 		std::deque<int> m_Free;
 		std::vector<System*> m_Systems;
 		ComponentAllocator m_allocator;
+		std::unordered_map<std::type_index, int> m_SystemIndex;
 		
 	public:
+		virtual ~EntityManager();
 		
-#if 0
-		template<class... T>
-		void CreateArchetype()
-		{
-			void* data = nullptr;
-			AllocateComponent<T...>(data);
-		}
-		
-		template<class T>
-		void AllocateComponent(void* data)
-		{
-			//printf("types:%d\n", sizeof...(types));
-			printf("create archetype %s\n", typeid(T).name());
-		}
-		
-		template<class T, class S, class... R>
-		void AllocateComponent(void* data)
-		{
-			AllocateComponent<T>(data);
-			AllocateComponent<S, R...>(data);
-		}
-#endif
 		void Init()
 		{
 			m_allocator.Init();
@@ -54,6 +35,19 @@ namespace ecs
 		/**
 		 * エンティティを生成します。
 		 */
+		template<class T>
+		void CreateArchetype()
+		{
+			printf("create archetype %s\n", typeid(T).name());
+		}
+		
+		template<class T, class S, class... Types>
+		void CreateArchetype()
+		{
+			CreateArchetype<T>();
+			CreateArchetype<S, Types...>();
+		}
+		
 		Entity CreateEntity();
 		Entity CreateEntity(Archetype archetype);
 		
@@ -95,7 +89,13 @@ namespace ecs
 		 */
 		void RemoveEntity(Entity entity);
 		
-		void RegisterSystem(System* system);
+		template<class T, typename... Args>
+		void RegisterSystem(Args&&... args)
+		{
+			System* system = new T(args...);
+			m_Systems.push_back(system);
+			m_SystemIndex[typeid(T)] = static_cast<int>(m_Systems.size());
+		}
 		
 		void Update(float delta);
 	};

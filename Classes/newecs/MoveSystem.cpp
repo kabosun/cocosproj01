@@ -17,6 +17,6 @@ void MoveSystem::Update(ecs::EntityManager* manager, float delta)
 		
 		//position.X += 100 * delta;
 		
-		printf("%d) x:%f y:%f id:%d\n", i, position.X, position.Y, sprite.Id);
+//		printf("%d) x:%f y:%f id:%d\n", i, position.X, position.Y, sprite.Id);
 	}
 }
