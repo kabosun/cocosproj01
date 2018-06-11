@@ -73,7 +73,7 @@ bool HelloWorld::init()
 	
 	
 	mode = Mode::Dig;
-	textMode = Label::createWithSystemFont("Dig", "HiraKakuProN-W6", 24);
+	textMode = Label::createWithSystemFont("ini", "HiraKakuProN-W6", 12);
 	textMode->setPosition(cocos2d::Point(origin.x + visibleSize.width - textMode->getContentSize().width,
 										 origin.y + visibleSize.height - textMode->getContentSize().height/2));
 	textMode->setAnchorPoint({0.5, 1});
@@ -184,7 +184,7 @@ bool HelloWorld::init()
 	physics.Initialize();
 	
 	// フィールド
-	field.Initialize(this);
+	//field.Initialize(this);
 	
 	// コンポーネント
 	components.Initialize(&entities);
