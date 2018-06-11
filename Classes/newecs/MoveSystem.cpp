@@ -3,9 +3,9 @@
 
 void MoveSystem::AssignComponent(ecs::EntityManager* manager)
 {
-	Length = manager->length();
-	m_Position = manager->GetComponentHead<Position>();
-	m_Sprite = manager->GetComponentHead<Sprite>();
+	Length = manager->GetEntityLength();
+	m_Position = manager->GetComponentPointer<Position>();
+	m_Sprite = manager->GetComponentPointer<Sprite>();
 }
 
 void MoveSystem::Update(ecs::EntityManager* manager, float delta)
@@ -17,6 +17,6 @@ void MoveSystem::Update(ecs::EntityManager* manager, float delta)
 		
 		//position.X += 100 * delta;
 		
-		printf("%d) x:%f y:%f id:%d\n", i, position.X, position.Y, sprite.Id);
+		log("%d) x:%f y:%f id:%d", i, position.X, position.Y, sprite.Id);
 	}
 }

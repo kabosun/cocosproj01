@@ -11,9 +11,7 @@
 namespace ecs
 {
 	class System;
-	
-	using Archetype = int;
-	
+
 	static const int MINIMUM_FREE_INDICES = 1024;
 	
 	class EntityManager
@@ -67,14 +65,14 @@ namespace ecs
 		}
 		
 		template<class T>
-		T* GetComponentHead() const
+		T* GetComponentPointer() const
 		{
-			T* components = m_allocator.getchunk<T>();
+			T* components = m_allocator.gethead<T>();
 			
 			return components;
 		}
-		
-		int length() const
+
+		int GetEntityLength() const
 		{
 			return m_allocator.length();
 		}

@@ -5,6 +5,14 @@
 #include <vector>
 #include "Entity.h"
 
+#ifdef _MSC_VER
+#include "cocos2d.h"
+#define log(...)		cocos2d::log(__VA_ARGS__)
+
+#else
+#define log(...)
+#endif
+
 namespace ecs
 {
 	// すべてのコンポーネントを同じサイズで確保していく
@@ -14,30 +22,64 @@ namespace ecs
 		
 		struct Chunk
 		{
-			int size = 0;	// コンポーネントのサイズ
+			static const int chunksize = 64 * 1024;
+			
+			Archetype archetype;	// 定義できるコンポーネント数が最大256
+
+			int maxEntityCount = 0;	// エンティティの最大数
+			int componentCount = 0;	// コンポーネントの数
+			int length = 0;
+			int maxlength = 0;	// entityに割り当てられるcomponentの最大数
+			int useSize = 0;
+
+			void* headLut[256] = {};
+			int sizeLut[256] = { 0 };
+
+			void* head = nullptr;
 			void* buffer = nullptr;
+			Entity* entities = nullptr;	// buffer内に確保される
 		};
 		
 		int m_maxSize = 0;
-		int m_use_size = 0;
+		int m_usesize = 0;
 		void* m_buffer = nullptr;
 		void* m_head = nullptr;
 		int m_current = 0;
-		
+
+		int m_totalchunkcount = 0;
+		int m_usechunkcount = 0;
+		Chunk* m_chunkman = nullptr;	// chunkの管理領域
+
+		int m_componentIndex = 0;
+		std::unordered_map<std::type_index, int> m_componentIndexLut;
+
 		std::unordered_map<std::type_index, Chunk> m_componentLut;
-		std::unordered_map<EntityId, int> m_entityLut;
-		std::vector<Entity> m_indexLut;
+		std::unordered_map<EntityId, int> m_entityLut;	// entityがどのchunkの何番目か. entityが移動するときにも更新しないといけない
 		
 	public:
 		
-		void Init(int maxSize = 64 * 1024/* 64k */)
+		void Init(int maxSize = 4 * 1024 * 1024/* 4M */)
 		{
 			assert(m_buffer == nullptr);
 			m_buffer = operator new (maxSize);
 			m_head = m_buffer;
 			m_maxSize = maxSize;
-			
-			m_indexLut.resize(m_defaultSpaceSize);
+
+			// max chunk
+			m_totalchunkcount = maxSize / (Chunk::chunksize + sizeof(Chunk));
+
+			// 管理領域の割りあてと初期化
+			m_chunkman = static_cast<Chunk*>(m_head);
+			int chunkmansize = m_totalchunkcount * sizeof(Chunk);
+			for (int i = 0; i < m_totalchunkcount; i++)
+			{
+				new(&m_chunkman[i])Chunk;
+			}
+
+			m_head = static_cast<char*>(m_head) + chunkmansize;
+			m_usesize += chunkmansize;
+
+			log("chunk (size:%d) count:%d", sizeof(Chunk), m_totalchunkcount);
 		}
 		
 		void destroy()
@@ -53,11 +95,6 @@ namespace ecs
 			destroy();
 		}
 		
-		int length() const
-		{
-			return m_current;
-		}
-		
 		int gethandle(Entity entity) const
 		{
 			assert(m_entityLut.count(entity.Id) != 0);
@@ -65,72 +102,136 @@ namespace ecs
 		}
 		
 		template<class T>
-		T* getchunk() const
+		T* gethead(int chunkindex=0) const
 		{
-			assert(m_componentLut.count(typeid(T)) != 0);
-			
-			const Chunk& chunk = m_componentLut.at(typeid(T));
-			T* head = static_cast<T*>(chunk.buffer);
-			
-			return head;
+			assert(chunkindex >= 0 && m_totalchunkcount > chunkindex);
+			assert(m_componentIndexLut.count(typeid(T)) > 0);
+
+			const Chunk* chunk = &m_chunkman[chunkindex];
+
+			int index = m_componentIndexLut.at(typeid(T));
+			return static_cast<T*>(chunk->headLut[index]);
+		}
+
+		int length() const
+		{
+			int chunkindex = 0;
+			const Chunk* chunk = &m_chunkman[chunkindex];
+			return chunk->length;
 		}
 		
 		template<class T, typename... Args>
 		void alloc(Entity entity, Args&&... args)
 		{
-			if (m_componentLut.count(typeid(T)) == 0)
-			{
-				// 初回アサイン時はchunkを生成する
-				int size = m_defaultSpaceSize;
-				m_use_size += sizeof(T) * size;
-				assert(m_maxSize > m_use_size);
-				
-				T* buf = static_cast<T*>(m_head);
-				
-				T* p = static_cast<T*>(m_head);
-				p += size;
-				m_head = static_cast<void*>(p);
-				
-				Chunk chunk;
-				chunk.size = sizeof(T);
-				chunk.buffer = buf;
-				m_componentLut[typeid(T)] = chunk;
-			}
-			
-			// 初期化
-			const Chunk& chunk = m_componentLut.at(typeid(T));
-			T* buf = static_cast<T*>(chunk.buffer);
-			
-			new(&buf[m_current])T(args...);
-			
-			// 未登録のentityならカーソルを進める
+			// chunkがなければ空きchunkにメモリを割り当てる
+			Chunk* chunk = get_or_alloc_chunk();
+
+			// componentに番号をふる
+			int componentHandle = getcomponenthandle<T>();
+
+			// componentがなければ割り当てる
+			void* p = get_or_alloc_compnent(chunk, componentHandle, sizeof(T));
+			T* components = static_cast<T*>(p);
+
 			if (m_entityLut.count(entity.Id) == 0)
 			{
-				m_indexLut[m_current] = entity;
-				m_entityLut[entity.Id] = m_current;
-				m_current++;
+				m_entityLut[entity.Id] = chunk->length;
+				chunk->entities[chunk->length] = entity;
+				chunk->length++;
 			}
+
+			int index = m_entityLut.at(entity.Id);
+			new(&components[index])T(args...);
 		}
 		
 		void free(Entity entity)
 		{
 			assert(m_entityLut.count(entity.Id) > 0);
 			
-			int index = m_entityLut[entity.Id];
+			int chunkindex = 0;
+			Chunk* chunk = &m_chunkman[chunkindex];
+
+			int index = m_entityLut.at(entity.Id);
 			
 			// entityのindexを再配置する
-			for (auto pair : m_componentLut)
+			// TODO 再配置コストが高い
+			for (int i=0; i<256; i++)
 			{
-				Chunk& chunk = pair.second;
-				void* src = static_cast<char*>(chunk.buffer) + (chunk.size * (m_current - 1));
-				void* dst = static_cast<char*>(chunk.buffer) + (chunk.size * index);
-				memcpy(dst, src, chunk.size);
+				void* buffer = chunk->headLut[i];
+				if (buffer == nullptr) continue;
+
+				int size = chunk->sizeLut[i];
+				void* src = static_cast<char*>(buffer) + (size * (chunk->length - 1));
+				void* dst = static_cast<char*>(buffer) + (size * index);
+				memcpy(dst, src, size);
 			}
-			
-			Entity lastEntity = m_indexLut[m_current - 1];
+
+			Entity lastEntity = chunk->entities[index] = chunk->entities[chunk->length - 1];
+			chunk->length--;
+
 			m_entityLut[lastEntity.Id] = index;
 			m_entityLut.erase(entity.Id);
-			m_current--;
+		}
+
+	private:
+
+		Chunk* get_or_alloc_chunk()
+		{
+			if (m_usechunkcount == 0)
+			{
+				Chunk* chunk = &m_chunkman[m_usechunkcount];
+				chunk->buffer = m_head;
+				chunk->head = m_head;
+				m_head = static_cast<char*>(m_head) + Chunk::chunksize;
+				m_usesize += Chunk::chunksize;
+				m_usechunkcount++;
+			}
+
+			return &m_chunkman[0];	// とりあえずchunkは1つ
+		}
+
+		void* get_or_alloc_compnent(Chunk* chunk, int componentHandle, int componentsize)
+		{
+			if (chunk->headLut[componentHandle] == nullptr)
+			{
+				int freespace = Chunk::chunksize - chunk->useSize;
+
+				if (chunk->maxlength == 0)
+				{
+					chunk->maxlength = std::min(128, freespace / componentsize);	// まだ最大128に制限しておく
+					assert(chunk->maxlength > 0);
+				}
+
+				assert(componentsize * chunk->length <= freespace);	// 空き不足
+
+				// entity領域を確保する
+				chunk->entities = static_cast<Entity*>(chunk->head);
+				chunk->head = static_cast<char*>(chunk->head) + (sizeof(Entity) * chunk->maxlength);
+
+				// chunkのheadからメモリを確保
+				chunk->headLut[componentHandle] = chunk->head;
+				chunk->sizeLut[componentHandle] = componentsize;
+				chunk->head = static_cast<char*>(chunk->head) + (componentsize * chunk->maxlength);
+				chunk->useSize += (componentsize * chunk->maxlength);
+			}
+			return chunk->headLut[componentHandle];
+		}
+
+		template<class T>
+		int getcomponenthandle()
+		{
+			int componentHandle = 0;
+			if (m_componentIndexLut.count(typeid(T)) == 0)
+			{
+				componentHandle = m_componentIndex;
+				m_componentIndexLut[typeid(T)] = componentHandle;
+				m_componentIndex++;
+			}
+			else
+			{
+				componentHandle = m_componentIndexLut.at(typeid(T));
+			}
+			return componentHandle;
 		}
 	};
 }

@@ -4,10 +4,13 @@
 #include <random>
 #include <vector>
 #include <typeindex>
+#include <bitset>
 
 namespace ecs
 {
 	using EntityId = unsigned int;
+
+	using Archetype = std::bitset<256>;
 	
 	const unsigned ENTITY_INDEX_BITS = 22;
 	const unsigned ENTITY_INDEX_MASK = (1<<ENTITY_INDEX_BITS)-1;

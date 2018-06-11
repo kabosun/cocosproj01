@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include <functional>
 #include <unordered_map>
 #include "../ecs/Entity.h"
 #include "../ecs/Vector.h"

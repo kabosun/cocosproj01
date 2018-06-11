@@ -20,8 +20,6 @@ void NewECSSample::Init()
 	
 	manager.RemoveEntity(list[0]);
 	manager.RemoveEntity(list[4]);
-	
-	manager.CreateArchetype<Position, Sprite>();
 }
 
 void NewECSSample::Update(float delta)
