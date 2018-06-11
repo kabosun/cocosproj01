@@ -31,7 +31,11 @@ namespace ecs
 	
 	Entity EntityManager::CreateEntity(Archetype archetype)
 	{
-		return CreateEntity();
+		Entity entity = CreateEntity();
+		
+		m_allocator.allocateentity(entity, archetype);
+		
+		return entity;
 	}
 
 	bool EntityManager::AliveEntity(Entity entity) const

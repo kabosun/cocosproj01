@@ -4,15 +4,15 @@
 
 using namespace ecs;
 
-class MoveSystem : public ecs::System
+class MoveSystem : public System
 {
 	int Length = 0;
 	Position* m_Position;
 	Sprite* m_Sprite;
 	
 public:
-	void AssignComponent(ecs::EntityManager* manager) override;
+	void AssignComponent(EntityManager* manager) override;
 	
-	void Update(ecs::EntityManager* manager, float delta) override;
+	void Update(EntityManager* manager, float delta) override;
 };
 

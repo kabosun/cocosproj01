@@ -30,20 +30,21 @@ namespace ecs
 			m_allocator.Init();
 		}
 		
-		/**
-		 * エンティティを生成します。
-		 */
-		template<class T>
-		void CreateArchetype()
+		template<typename... Args>
+		Archetype CreateArchetype(Args... args)
 		{
-			printf("create archetype %s\n", typeid(T).name());
-		}
-		
-		template<class T, class S, class... Types>
-		void CreateArchetype()
-		{
-			CreateArchetype<T>();
-			CreateArchetype<S, Types...>();
+			std::vector<ComponentInfo> list = {args...};
+			
+			Archetype a;
+			for (ComponentInfo& info : list)
+			{
+				a.set(info.Index);
+			}
+			
+			// chunkの生成
+			m_allocator.allocatechunk(a, list);
+			
+			return a;
 		}
 		
 		Entity CreateEntity();
@@ -52,13 +53,13 @@ namespace ecs
 		template<class T, typename... Args>
 		void AssignComponent(Entity entity, Args&&... args)
 		{
-			m_allocator.alloc<T>(entity, args...);
+			m_allocator.assign<T>(entity, args...);
 		}
 		
 		template<class T>
 		T* GetComponent(Entity entity) const
 		{
-			T* components = m_allocator.getchunk<T>();
+			T* components = m_allocator.gethead<T>();
 			
 			int index = m_allocator.gethandle(entity);
 			return &components[index];

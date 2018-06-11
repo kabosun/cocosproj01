@@ -17,6 +17,6 @@ void MoveSystem::Update(ecs::EntityManager* manager, float delta)
 		
 		//position.X += 100 * delta;
 		
-		log("%d) x:%f y:%f id:%d", i, position.X, position.Y, sprite.Id);
+		log("%d) x:%.2f y:%.2f id:%d", i, position.X, position.Y, sprite.Id);
 	}
 }

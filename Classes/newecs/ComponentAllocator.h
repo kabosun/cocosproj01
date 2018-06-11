@@ -8,9 +8,8 @@
 #ifdef _MSC_VER
 #include "cocos2d.h"
 #define log(...)		cocos2d::log(__VA_ARGS__)
-
 #else
-#define log(...)
+#define log(x, ...)		printf(x "\n", __VA_ARGS__)
 #endif
 
 namespace ecs
@@ -23,8 +22,6 @@ namespace ecs
 		struct Chunk
 		{
 			static const int chunksize = 64 * 1024;
-			
-			Archetype archetype;	// 定義できるコンポーネント数が最大256
 
 			int maxEntityCount = 0;	// エンティティの最大数
 			int componentCount = 0;	// コンポーネントの数
@@ -38,6 +35,15 @@ namespace ecs
 			void* head = nullptr;
 			void* buffer = nullptr;
 			Entity* entities = nullptr;	// buffer内に確保される
+			
+			int add(Entity entity)
+			{
+				assert(length < maxlength);
+				
+				entities[length] = entity;
+				length++;
+				return length - 1;
+			}
 		};
 		
 		int m_maxSize = 0;
@@ -51,10 +57,11 @@ namespace ecs
 		Chunk* m_chunkman = nullptr;	// chunkの管理領域
 
 		int m_componentIndex = 0;
-		std::unordered_map<std::type_index, int> m_componentIndexLut;
 
 		std::unordered_map<std::type_index, Chunk> m_componentLut;
 		std::unordered_map<EntityId, int> m_entityLut;	// entityがどのchunkの何番目か. entityが移動するときにも更新しないといけない
+		
+		std::unordered_map<Archetype, int> m_ArchetypeChunkLut;
 		
 	public:
 		
@@ -79,7 +86,7 @@ namespace ecs
 			m_head = static_cast<char*>(m_head) + chunkmansize;
 			m_usesize += chunkmansize;
 
-			log("chunk (size:%d) count:%d", sizeof(Chunk), m_totalchunkcount);
+			log("chunk (size:%zu) count:%d", sizeof(Chunk), m_totalchunkcount);
 		}
 		
 		void destroy()
@@ -105,11 +112,10 @@ namespace ecs
 		T* gethead(int chunkindex=0) const
 		{
 			assert(chunkindex >= 0 && m_totalchunkcount > chunkindex);
-			assert(m_componentIndexLut.count(typeid(T)) > 0);
 
 			const Chunk* chunk = &m_chunkman[chunkindex];
 
-			int index = m_componentIndexLut.at(typeid(T));
+			int index = T::Info().Index;
 			return static_cast<T*>(chunk->headLut[index]);
 		}
 
@@ -120,14 +126,50 @@ namespace ecs
 			return chunk->length;
 		}
 		
+		void allocatechunk(Archetype archetype, std::vector<ComponentInfo> list)
+		{
+			// chunkがなければ空きchunkにメモリを割り当てる
+			Chunk* chunk = &m_chunkman[get_or_alloc_chunk(archetype)];
+			
+			for (auto info : list)
+			{
+				get_or_alloc_compnent(chunk, info.Index, info.Size);
+			}
+		}
+		
+		void allocateentity(Entity entity, Archetype archetype)
+		{
+			int chunkindex = m_ArchetypeChunkLut.at(archetype);
+			Chunk* chunk = &m_chunkman[chunkindex];
+			
+			int index = chunk->add(entity);
+			
+			m_entityLut[entity.Id] = (chunkindex << 16) | index;
+		}
+		
+		template<class T, typename... Args>
+		void assign(Entity entity, Args&&... args)
+		{
+			int index = m_entityLut.at(entity.Id);
+			int chunkindex = index >> 16;
+			int entityindex = index & 65535;
+			
+			Chunk* chunk = &m_chunkman[chunkindex];
+			
+			void* p = getcomponent(chunk, T::Info().Index);
+			T* components = static_cast<T*>(p);
+			
+			new(&components[entityindex])T(args...);
+		}
+		
 		template<class T, typename... Args>
 		void alloc(Entity entity, Args&&... args)
 		{
 			// chunkがなければ空きchunkにメモリを割り当てる
-			Chunk* chunk = get_or_alloc_chunk();
+			Chunk* chunk = &m_chunkman[0];
 
 			// componentに番号をふる
-			int componentHandle = getcomponenthandle<T>();
+			int componentHandle = T::Info().Index;
 
 			// componentがなければ割り当てる
 			void* p = get_or_alloc_compnent(chunk, componentHandle, sizeof(T));
@@ -175,19 +217,24 @@ namespace ecs
 
 	private:
 
-		Chunk* get_or_alloc_chunk()
+		int get_or_alloc_chunk(Archetype archetype)
 		{
-			if (m_usechunkcount == 0)
+			if (m_ArchetypeChunkLut.count(archetype) > 0)
 			{
-				Chunk* chunk = &m_chunkman[m_usechunkcount];
-				chunk->buffer = m_head;
-				chunk->head = m_head;
-				m_head = static_cast<char*>(m_head) + Chunk::chunksize;
-				m_usesize += Chunk::chunksize;
-				m_usechunkcount++;
+				return m_ArchetypeChunkLut.at(archetype);
 			}
+			
+			Chunk* chunk = &m_chunkman[m_usechunkcount];
+			chunk->buffer = m_head;
+			chunk->head = m_head;
+			m_head = static_cast<char*>(m_head) + Chunk::chunksize;
+			m_usesize += Chunk::chunksize;
+			
+			int index = m_usechunkcount;
+			m_ArchetypeChunkLut[archetype] = index;
+			m_usechunkcount++;
 
-			return &m_chunkman[0];	// とりあえずchunkは1つ
+			return index;
 		}
 
 		void* get_or_alloc_compnent(Chunk* chunk, int componentHandle, int componentsize)
@@ -216,22 +263,10 @@ namespace ecs
 			}
 			return chunk->headLut[componentHandle];
 		}
-
-		template<class T>
-		int getcomponenthandle()
+		
+		void* getcomponent(Chunk* chunk, int index) const
 		{
-			int componentHandle = 0;
-			if (m_componentIndexLut.count(typeid(T)) == 0)
-			{
-				componentHandle = m_componentIndex;
-				m_componentIndexLut[typeid(T)] = componentHandle;
-				m_componentIndex++;
-			}
-			else
-			{
-				componentHandle = m_componentIndexLut.at(typeid(T));
-			}
-			return componentHandle;
+			return chunk->headLut[index];
 		}
 	};
 }

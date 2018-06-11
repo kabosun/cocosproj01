@@ -10,7 +10,7 @@ namespace ecs
 {
 	using EntityId = unsigned int;
 
-	using Archetype = std::bitset<256>;
+	using Archetype = std::bitset<128>;
 	
 	const unsigned ENTITY_INDEX_BITS = 22;
 	const unsigned ENTITY_INDEX_MASK = (1<<ENTITY_INDEX_BITS)-1;
@@ -50,6 +50,12 @@ namespace ecs
 		{
 			return Id != e.Id;
 		}
+	};
+	
+	struct ComponentInfo
+	{
+		int Index;
+		int Size;
 	};
 
 	template<typename T>
