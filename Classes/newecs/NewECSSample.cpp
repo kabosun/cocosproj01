@@ -9,7 +9,7 @@ void NewECSSample::Init()
 	manager.Init();
 	manager.RegisterSystem<MoveSystem>();
 	
-	Archetype archetype = manager.CreateArchetype(Position::Info(), Sprite::Info());
+	Archetype archetype = manager.CreateArchetype(Position::Info(), Lifetime::Info(), Sprite::Info());
 	
 	log("%zu", archetype.to_ulong());
 	log("%s", archetype.to_string().c_str());
@@ -21,6 +21,7 @@ void NewECSSample::Init()
 		list.push_back(entity);
 		
 		manager.AssignComponent<Position>(entity, 100+i, 150+i);
+		manager.AssignComponent<Lifetime>(entity, 3+i);
 		manager.AssignComponent<Sprite>(entity, 1+i);
 	}
 	

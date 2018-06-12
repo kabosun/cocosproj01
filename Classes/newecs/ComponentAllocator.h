@@ -118,6 +118,14 @@ namespace ecs
 			int index = T::Info().Index;
 			return static_cast<T*>(chunk->headLut[index]);
 		}
+		
+		Entity* getentity(int chunkindex=0) const
+		{
+			assert(chunkindex >= 0 && m_totalchunkcount > chunkindex);
+			
+			const Chunk* chunk = &m_chunkman[chunkindex];
+			return chunk->entities;
+		}
 
 		int length() const
 		{

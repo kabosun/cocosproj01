@@ -72,6 +72,11 @@ namespace ecs
 			
 			return components;
 		}
+		
+		Entity* GetEntityPointer() const
+		{
+			return m_allocator.getentity();
+		}
 
 		int GetEntityLength() const
 		{
