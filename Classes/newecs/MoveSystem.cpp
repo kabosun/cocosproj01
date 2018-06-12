@@ -3,11 +3,13 @@
 
 void MoveSystem::AssignComponent(ecs::EntityManager* manager)
 {
-	Length = manager->GetEntityLength();
-	m_Entity = manager->GetEntityPointer();
-	m_Position = manager->GetComponentPointer<Position>();
-	m_Lifetime = manager->GetComponentPointer<Lifetime>();
-	m_Sprite = manager->GetComponentPointer<Sprite>();
+	Archetype filter = manager->CreateFilter(Position::Info(), Lifetime::Info());
+	ComponentPack components = manager->GetComponentPack(filter);
+
+	Length = components.Length();
+	m_Entity = components.GetEntityArray();
+	m_Position = components.GetComponentArray<Position>();
+	m_Lifetime = components.GetComponentArray<Lifetime>();
 }
 
 void MoveSystem::Update(ecs::EntityManager* manager, float delta)
@@ -16,11 +18,10 @@ void MoveSystem::Update(ecs::EntityManager* manager, float delta)
 	{
 		Position& position = m_Position[i];
 		Lifetime& lifetime = m_Lifetime[i];
-		Sprite& sprite = m_Sprite[i];
 		
 		//position.X += 100 * delta;
 		
-		log("%d) id:%d life:%d, x:%.2f y:%.2f", i, sprite.Id, lifetime.Value, position.X, position.Y);
+		log("%d) id:%d life:%d, x:%.2f y:%.2f", i, m_Entity[i].Id, lifetime.Value, position.X, position.Y);
 		
 		lifetime.Value--;
 		if (lifetime.Value <= 0)

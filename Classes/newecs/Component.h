@@ -1,6 +1,8 @@
 #pragma once
 #include "../ecs/Vector.h"
 
+#define COMPONENT_INFO(T)		static const ComponentInfo Info() { return {static_cast<int>(ComponentId::T), sizeof(T)}; }
+
 namespace ecs
 {
 	enum class ComponentId
@@ -15,14 +17,14 @@ namespace ecs
 	
 	struct Position : public Vector2f
 	{
-		static const ComponentInfo Info() { return {static_cast<int>(ComponentId::Position), sizeof(Position)}; }
-		
+		COMPONENT_INFO(Position);
+
 		using Vector2f::Vector2f;
 	};
 	
 	struct Lifetime
 	{
-		static const ComponentInfo Info() { return {static_cast<int>(ComponentId::Lifetime), sizeof(Lifetime)}; }
+		COMPONENT_INFO(Lifetime);
 		
 		int MaxValue;
 		int Value;
@@ -38,13 +40,12 @@ namespace ecs
 	
 	struct Sprite
 	{
-		static const ComponentInfo Info() { return {static_cast<int>(ComponentId::Sprite), sizeof(Sprite)}; }
+		COMPONENT_INFO(Sprite);
 		
 		int Id;
 		
 		Sprite(int id)
-		{
-			Id = id;
-		}
+		: Id(id)
+		{}
 	};
 }

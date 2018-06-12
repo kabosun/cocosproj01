@@ -22,6 +22,8 @@ namespace ecs
 		ComponentAllocator m_allocator;
 		std::unordered_map<std::type_index, int> m_SystemIndex;
 		
+		std::vector<Entity> m_removelist;
+
 	public:
 		virtual ~EntityManager();
 		
@@ -46,6 +48,20 @@ namespace ecs
 			
 			return a;
 		}
+
+		template<typename... Args>
+		Archetype CreateFilter(Args... args)
+		{
+			std::vector<ComponentInfo> list = { args... };
+
+			Archetype a;
+			for (ComponentInfo& info : list)
+			{
+				a.set(info.Index);
+			}
+
+			return a;
+		}
 		
 		Entity CreateEntity();
 		Entity CreateEntity(Archetype archetype);
@@ -65,22 +81,9 @@ namespace ecs
 			return &components[index];
 		}
 		
-		template<class T>
-		T* GetComponentPointer() const
+		ComponentPack GetComponentPack(const Archetype& archetype) const
 		{
-			T* components = m_allocator.gethead<T>();
-			
-			return components;
-		}
-		
-		Entity* GetEntityPointer() const
-		{
-			return m_allocator.getentity();
-		}
-
-		int GetEntityLength() const
-		{
-			return m_allocator.length();
+			return m_allocator.getcomponentpack(archetype);
 		}
 		
 		/**
@@ -102,6 +105,8 @@ namespace ecs
 		}
 		
 		void Update(float delta);
+
+		void GC();
 	};
 	
 }

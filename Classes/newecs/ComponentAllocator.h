@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <typeindex>
 #include <vector>
+#include <list>
 #include "Entity.h"
 
 #ifdef _MSC_VER
@@ -14,38 +15,111 @@
 
 namespace ecs
 {
+	struct Chunk
+	{
+		static const int chunksize = 64 * 1024;
+
+		int maxEntityCount = 0;	// エンティティの最大数
+		int componentCount = 0;	// コンポーネントの数
+		int length = 0;
+		int maxlength = 0;	// entityに割り当てられるcomponentの最大数
+		int useSize = 0;
+
+		void* headLut[256] = {};
+		int sizeLut[256] = { 0 };
+
+		void* head = nullptr;
+		void* buffer = nullptr;
+		Entity* entities = nullptr;	// buffer内に確保される
+
+		int add(Entity entity)
+		{
+			assert(length < maxlength);
+
+			entities[length] = entity;
+			length++;
+			return length - 1;
+		}
+
+		Chunk* nextchunk;
+		Chunk* lastchunk;
+	};
+
+	// chunkを連結して仮想的な配列アクセスを提供する
+	template<class T>
+	struct ComponentArray
+	{
+		T* p;
+		int size;
+
+		ComponentArray(T* p, int size)
+		{
+			this->p = p;
+			this->size = size;
+		}
+
+		T& operator[](int i)
+		{
+			return p[i];
+		}
+
+		int length() const
+		{
+			return size;
+		}
+	};
+
+	struct ComponentPack
+	{
+		ComponentPack(Chunk* chunk)
+		{
+			chunks.push_back(chunk);
+		}
+
+		int Length() const
+		{
+			return chunks.front()->length;
+		}
+
+		ComponentArray<Entity> GetEntityArray() const
+		{
+			Chunk* chunk = chunks.front();
+
+			Entity* entity = chunk->entities;
+
+			ComponentArray<Entity> array(entity, chunk->length);
+			return array;
+		}
+
+		template<class T>
+		ComponentArray<T> GetComponentArray() const
+		{
+			// TODO chunk中のコンポーネントを連結したlistを返す
+			Chunk* chunk = chunks.front();
+
+			T* entity = gethead<T>(chunk);
+
+			ComponentArray<T> array(entity, chunk->length);
+			return array;
+		}
+
+	private:
+		std::list<Chunk*> chunks;	// フィルタリング済みのchunk
+
+		template<class T>
+		T* gethead(const Chunk* chunk) const
+		{
+			assert(chunk != nullptr);
+
+			int index = T::Info().Index;
+			return static_cast<T*>(chunk->headLut[index]);
+		}
+	};
+
 	// すべてのコンポーネントを同じサイズで確保していく
 	class ComponentAllocator
 	{
 		static const int m_defaultSpaceSize = 128;
-		
-		struct Chunk
-		{
-			static const int chunksize = 64 * 1024;
-
-			int maxEntityCount = 0;	// エンティティの最大数
-			int componentCount = 0;	// コンポーネントの数
-			int length = 0;
-			int maxlength = 0;	// entityに割り当てられるcomponentの最大数
-			int useSize = 0;
-
-			void* headLut[256] = {};
-			int sizeLut[256] = { 0 };
-
-			void* head = nullptr;
-			void* buffer = nullptr;
-			Entity* entities = nullptr;	// buffer内に確保される
-			
-			int add(Entity entity)
-			{
-				assert(length < maxlength);
-				
-				entities[length] = entity;
-				length++;
-				return length - 1;
-			}
-		};
-		
 		int m_maxSize = 0;
 		int m_usesize = 0;
 		void* m_buffer = nullptr;
@@ -126,18 +200,11 @@ namespace ecs
 			const Chunk* chunk = &m_chunkman[chunkindex];
 			return chunk->entities;
 		}
-
-		int length() const
-		{
-			int chunkindex = 0;
-			const Chunk* chunk = &m_chunkman[chunkindex];
-			return chunk->length;
-		}
 		
 		void allocatechunk(Archetype archetype, std::vector<ComponentInfo> list)
 		{
 			// chunkがなければ空きchunkにメモリを割り当てる
-			Chunk* chunk = &m_chunkman[get_or_alloc_chunk(archetype)];
+			Chunk* chunk = get_or_alloc_chunk(archetype);
 			
 			for (auto info : list)
 			{
@@ -148,7 +215,7 @@ namespace ecs
 		void allocateentity(Entity entity, Archetype archetype)
 		{
 			int chunkindex = m_ArchetypeChunkLut.at(archetype);
-			Chunk* chunk = &m_chunkman[chunkindex];
+			Chunk* chunk = m_chunkman[chunkindex].lastchunk;
 			
 			int index = chunk->add(entity);
 			
@@ -199,7 +266,7 @@ namespace ecs
 			assert(m_entityLut.count(entity.Id) > 0);
 			
 			int chunkindex = 0;
-			Chunk* chunk = &m_chunkman[chunkindex];
+			Chunk* chunk = m_chunkman[chunkindex].lastchunk;
 
 			int index = m_entityLut.at(entity.Id);
 			
@@ -223,13 +290,21 @@ namespace ecs
 			m_entityLut.erase(entity.Id);
 		}
 
+		ComponentPack getcomponentpack(const Archetype& archetype) const
+		{
+			Chunk* chunk = m_chunkman[m_ArchetypeChunkLut.at(archetype)].lastchunk;
+
+			ComponentPack pack(chunk);
+			return pack;
+		}
+
 	private:
 
-		int get_or_alloc_chunk(Archetype archetype)
+		Chunk* get_or_alloc_chunk(const Archetype& archetype)
 		{
 			if (m_ArchetypeChunkLut.count(archetype) > 0)
 			{
-				return m_ArchetypeChunkLut.at(archetype);
+				return m_chunkman[m_ArchetypeChunkLut.at(archetype)].lastchunk;
 			}
 			
 			Chunk* chunk = &m_chunkman[m_usechunkcount];
@@ -237,12 +312,14 @@ namespace ecs
 			chunk->head = m_head;
 			m_head = static_cast<char*>(m_head) + Chunk::chunksize;
 			m_usesize += Chunk::chunksize;
+			chunk->nextchunk = chunk;
+			chunk->lastchunk = chunk;
 			
 			int index = m_usechunkcount;
 			m_ArchetypeChunkLut[archetype] = index;
 			m_usechunkcount++;
 
-			return index;
+			return chunk->lastchunk;
 		}
 
 		void* get_or_alloc_compnent(Chunk* chunk, int componentHandle, int componentsize)

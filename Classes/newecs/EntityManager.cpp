@@ -52,7 +52,7 @@ namespace ecs
 			++m_Generation[index];
 			m_Free.push_back(index);
 			
-			m_allocator.free(entity);
+			m_removelist.push_back(entity);
 		}
 	}
 	
@@ -63,6 +63,15 @@ namespace ecs
 			system->AssignComponent(this);
 			system->Update(this, delta);
 		}
+	}
+
+	void EntityManager::GC()
+	{
+		for (Entity entity : m_removelist)
+		{
+			m_allocator.free(entity);
+		}
+		m_removelist.clear();
 	}
 }
 
