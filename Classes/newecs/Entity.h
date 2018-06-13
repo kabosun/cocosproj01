@@ -11,6 +11,7 @@ namespace ecs
 	using EntityId = unsigned int;
 
 	using Archetype = std::bitset<128>;
+	using Filter = Archetype;
 	
 	const unsigned ENTITY_INDEX_BITS = 22;
 	const unsigned ENTITY_INDEX_MASK = (1<<ENTITY_INDEX_BITS)-1;

@@ -69,9 +69,15 @@ namespace ecs
 	{
 		for (Entity entity : m_removelist)
 		{
+			log("remove entity id:%d", entity.Id);
 			m_allocator.free(entity);
 		}
 		m_removelist.clear();
+	}
+	
+	void EntityManager::InitSystem(System* system)
+	{
+		system->Init(this);
 	}
 }
 

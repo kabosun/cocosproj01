@@ -1,32 +1,39 @@
 #include "MoveSystem.h"
 #include "EntityManager.h"
 
+void MoveSystem::Init(EntityManager* manager)
+{
+	filter = manager->CreateFilter(Position::Info(), Lifetime::Info(), Monster::Info());
+}
+
 void MoveSystem::AssignComponent(ecs::EntityManager* manager)
 {
-	Archetype filter = manager->CreateFilter(Position::Info(), Lifetime::Info());
-	ComponentGroup componentGroup = manager->GetComponentGroup(filter);
-
-	Length = componentGroup.Length();
-	m_Entity = componentGroup.GetEntityArray();
-	m_Position = componentGroup.GetComponentArray<Position>();
-	m_Lifetime = componentGroup.GetComponentArray<Lifetime>();
+	ComponentGroup group = manager->GetComponentGroup(filter);
+	Length = group.Length();
+	m_Entity = group.GetEntityArray();
+	m_Position = group.GetComponentArray<Position>();
+	m_Lifetime = group.GetComponentArray<Lifetime>();
 }
 
 void MoveSystem::Update(ecs::EntityManager* manager, float delta)
 {
+	if (Length > 0) log("--- update --- %d", Length);
+	
 	for (int i=0; i<Length; i++)
 	{
+		Entity& entity = m_Entity[i];
 		Position& position = m_Position[i];
 		Lifetime& lifetime = m_Lifetime[i];
-		
 		//position.X += 100 * delta;
 		
-		log("%d) id:%d life:%d, x:%.2f y:%.2f", i, m_Entity[i].Id, lifetime.Value, position.X, position.Y);
+		log("%d) id:%d life:%d, x:%.2f y:%.2f", i, entity.Id, lifetime.Value, position.X, position.Y);
 		
 		lifetime.Value--;
 		if (lifetime.Value <= 0)
 		{
-			manager->RemoveEntity(m_Entity[i]);	// 削除したのでindexがずれてる
+			manager->RemoveEntity(entity);
 		}
 	}
 }
+
+//const int Health::Size = sizeof(Health);

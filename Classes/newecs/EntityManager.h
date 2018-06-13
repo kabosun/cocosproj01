@@ -50,11 +50,11 @@ namespace ecs
 		}
 
 		template<typename... Args>
-		Archetype CreateFilter(Args... args)
+		Filter CreateFilter(Args... args)
 		{
 			std::vector<ComponentInfo> list = { args... };
 
-			Archetype a;
+			Filter a;
 			for (ComponentInfo& info : list)
 			{
 				a.set(info.Index);
@@ -102,11 +102,16 @@ namespace ecs
 			System* system = new T(args...);
 			m_Systems.push_back(system);
 			m_SystemIndex[typeid(T)] = static_cast<int>(m_Systems.size());
+			
+			InitSystem(system);
 		}
 		
 		void Update(float delta);
 
 		void GC();
+		
+	private:
+		void InitSystem(System * system);
 	};
 	
 }

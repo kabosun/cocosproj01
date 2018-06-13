@@ -54,71 +54,71 @@ namespace ecs
 	struct ComponentArray
 	{
 		ComponentArray()
-		{
-			componentIndex = T::Info().Index;
-			this->componentLength = 0;
-		}
+		{}
 		
 		ComponentArray(Chunk* chunk, int length)
+		: chunk(chunk),
+		component_length(length),
+		cache_index(0),
+		cache_last_index(chunk->length)
 		{
-			componentIndex = T::Info().Index;
-			this->chunk = chunk;
-			this->componentLength = length;
-			cache_comopnent_head = (static_cast<T*>(chunk->headLut[componentIndex]));
-			cache_length = chunk->length;
+			component = static_cast<T*>(chunk->headLut[T::Index]);
+			cache_comopnent = &component[0];
 		}
 
 		T& operator[](int i)
 		{
 			// 逐次アクセスにはキャッシュを使う
-			if (cache_enable_index == i)
+			if (cache_index == i)
 			{
+				T* current = cache_comopnent;
 				// 次のアクセスにキャッシュが効くなら
-				if (cache_offset + cache_length > i + 1)
+				if (i + 1 < cache_last_index)
 				{
-					cache_enable_index = i + 1;
+					cache_index++;
+					cache_comopnent++;
 				}
-				return cache_comopnent_head[i - cache_offset];
+				return *current;
 			}
 
-			int start = 0;
+			int offset = 0;
 			Chunk* head = chunk;
 			do
 			{
-				if (start + head->length > i && start >= i)
+				if (offset + head->length > i && offset >= i)
 				{
-					if (start + head->length > i + 1)
+					if (offset + head->length > i + 1)
 					{
-						cache_offset = start;
-						cache_length = head->length;
-						cache_comopnent_head = (static_cast<T*>(head->headLut[componentIndex]));
-						cache_enable_index = i + 1;
+						cache_last_index = offset + head->length;
+						cache_comopnent = &component[cache_index];
+						cache_index = i + 1;
 					}
 
-					return (static_cast<T*>(head->headLut[componentIndex]))[i - start];
+					return component[i - offset];
 				}
-				start += chunk->length;
+				offset += chunk->length;
 				head = chunk->groupnext;
+				component = static_cast<T*>(head->headLut[T::Index]);
 
 			} while (head != nullptr);
 
-			return (static_cast<T*>(chunk->headLut[componentIndex]))[0];
+			assert(false);
+			return component[0];
 		}
 
 		int length() const
 		{
-			return this->componentLength;
+			return this->component_length;
 		}
 		
 	private:
 		Chunk* chunk;
-		int componentLength;
-		int componentIndex;
+		int component_length;
+		T* component;
 
-		int cache_offset = 0;
-		int cache_length = 0;
-		int cache_enable_index = 0;
-		T* cache_comopnent_head;
+		int cache_last_index;
+		int cache_index;
+		T* cache_comopnent;
 	};
 
 
@@ -126,72 +126,79 @@ namespace ecs
 	struct ComponentArray<Entity>
 	{
 		ComponentArray()
-		{
-			this->componentLength = 0;
-		}
-
+		{}
+		
 		ComponentArray(Chunk* chunk, int length)
+		: component_length(length),
+		chunk(chunk),
+		cache_index(0),
+		cache_last_index(chunk->length)
 		{
-			this->chunk = chunk;
-			this->componentLength = length;
-			cache_comopnent_head = chunk->entities;
-			cache_length = chunk->length;
+			component = chunk->entities;
+			cache_comopnent = &component[0];
 		}
-
+		
 		Entity& operator[](int i)
 		{
 			// 逐次アクセスにはキャッシュを使う
-			if (cache_enable_index == i)
+			if (cache_index == i)
 			{
+				Entity* current = cache_comopnent;
 				// 次のアクセスにキャッシュが効くなら
-				if (cache_offset + cache_length > i + 1)
+				if (i + 1 < cache_last_index)
 				{
-					cache_enable_index = i + 1;
+					cache_index++;
+					cache_comopnent++;
 				}
-				return cache_comopnent_head[i - cache_offset];
+				return *current;
 			}
-
-			int start = 0;
+			
+			int offset = 0;
 			Chunk* head = chunk;
 			do
 			{
-				if (start + head->length > i && start >= i)
+				if (offset + head->length > i && offset >= i)
 				{
-					if (start + head->length > i + 1)
+					if (offset + head->length > i + 1)
 					{
-						cache_offset = start;
-						cache_length = head->length;
-						cache_comopnent_head = head->entities;
-						cache_enable_index = i + 1;
+						cache_last_index = offset + head->length;
+						cache_comopnent = &component[cache_index];
+						cache_index = i + 1;
 					}
-
-					return head->entities[i - start];
+					
+					return component[i - offset];
 				}
-				start += chunk->length;
+				offset += chunk->length;
 				head = chunk->groupnext;
-
+				component = head->entities;
+				
 			} while (head != nullptr);
-
-			return chunk->entities[0];
+			
+			assert(false);
+			return head->entities[0];
 		}
-
+		
 		int length() const
 		{
-			return this->componentLength;
+			return this->component_length;
 		}
-
+		
 	private:
-		Chunk * chunk;
-		int componentLength;
-
-		int cache_offset = 0;
-		int cache_length = 0;
-		int cache_enable_index = 0;
-		Entity* cache_comopnent_head;
+		Chunk* chunk;
+		int component_length;
+		Entity* component;
+		
+		int cache_last_index;
+		int cache_index;
+		Entity* cache_comopnent;
 	};
-
+	
+	
 	struct ComponentGroup
 	{
+		ComponentGroup()
+		{}
+		
 		ComponentGroup(const Filter& filter, Chunk* chunks, int chunksize)
 		{
 			Chunk* head = nullptr;
@@ -203,20 +210,21 @@ namespace ecs
 				{
 					if (head == nullptr)
 					{
-						head = chunk = &chunks[i];
+						head = this->chunk = &chunks[i];
 					}
 					else
 					{
 						head->groupnext = &chunks[i];
 						head = head->groupnext;
 					}
-
+					
 					length += head->length;
 				}
 			}
+			
 			this->length = length;
 		}
-
+		
 		int Length() const
 		{
 			return length;
@@ -224,30 +232,20 @@ namespace ecs
 
 		ComponentArray<Entity> GetEntityArray() const
 		{
-			ComponentArray<Entity> array(chunk, length);
-			return array;
+			return ComponentArray<Entity>(chunk, length);
 		}
-
+		
 		template<class T>
 		ComponentArray<T> GetComponentArray() const
 		{
 			return ComponentArray<T>(chunk, length);
 		}
-
+		
 	private:
 		Chunk* chunk;	// chunk list
 		int length;
-
-		template<class T>
-		T* gethead(const Chunk* chunk) const
-		{
-			assert(chunk != nullptr);
-
-			int index = T::Info().Index;
-			return static_cast<T*>(chunk->headLut[index]);
-		}
 	};
-
+	
 	// すべてのコンポーネントを同じサイズで確保していく
 	class ComponentAllocator
 	{
@@ -321,8 +319,7 @@ namespace ecs
 
 			const Chunk* chunk = &m_chunkman[chunkindex];
 
-			int index = T::Info().Index;
-			return static_cast<T*>(chunk->headLut[index]);
+			return static_cast<T*>(chunk->headLut[T::Index]);
 		}
 		
 		Entity* getentity(int chunkindex=0) const
@@ -363,7 +360,7 @@ namespace ecs
 			
 			Chunk* chunk = &m_chunkman[chunkindex];
 			
-			void* p = getcomponent(chunk, T::Info().Index);
+			void* p = getcomponent(chunk, T::Index);
 			T* components = static_cast<T*>(p);
 			
 			new(&components[entityindex])T(args...);
@@ -374,12 +371,9 @@ namespace ecs
 		{
 			// chunkがなければ空きchunkにメモリを割り当てる
 			Chunk* chunk = &m_chunkman[0];
-
-			// componentに番号をふる
-			int componentHandle = T::Info().Index;
-
+			
 			// componentがなければ割り当てる
-			void* p = get_or_alloc_compnent(chunk, componentHandle, sizeof(T));
+			void* p = get_or_alloc_compnent(chunk, T::Index, sizeof(T));
 			T* components = static_cast<T*>(p);
 
 			if (m_entityLut.count(entity.Id) == 0)
@@ -428,8 +422,7 @@ namespace ecs
 
 		ComponentGroup getcomponentgroup(const Archetype& archetype) const
 		{
-			ComponentGroup group(archetype, m_chunkman, m_usechunkcount);
-			return group;
+			return ComponentGroup(archetype, m_chunkman, m_usechunkcount);
 		}
 
 	private:

@@ -9,7 +9,7 @@ void NewECSSample::Init()
 	manager.Init();
 	manager.RegisterSystem<MoveSystem>();
 	
-	Archetype archetype1 = manager.CreateArchetype(Position::Info(), Lifetime::Info(), Sprite::Info());
+	Archetype archetype1 = manager.CreateArchetype(Position::Info(), Lifetime::Info(), Monster::Info(), Sprite::Info());
 	log("archetype1: %zu", archetype1.to_ulong());
 	log("archetype1: %s", archetype1.to_string().c_str());
 

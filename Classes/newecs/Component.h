@@ -1,7 +1,8 @@
 #pragma once
 #include "../ecs/Vector.h"
 
-#define COMPONENT_INFO(T)		static const ComponentInfo Info() { return {static_cast<int>(ComponentId::T), sizeof(T)}; }
+#define COMPONENT_INFO(T)		static const ComponentInfo Info() { return {Index, sizeof(T)}; }\
+static const int Index = static_cast<int>(ComponentId::T);
 
 namespace ecs
 {
@@ -13,6 +14,7 @@ namespace ecs
 		Health,
 		Lifetime,
 		Sprite,
+		Monster,
 	};
 	
 	struct Position : public Vector2f
@@ -47,5 +49,10 @@ namespace ecs
 		Sprite(int id)
 		: Id(id)
 		{}
+	};
+	
+	struct Monster
+	{
+		COMPONENT_INFO(Monster);
 	};
 }
