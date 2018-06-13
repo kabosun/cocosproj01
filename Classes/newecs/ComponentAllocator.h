@@ -46,7 +46,7 @@ namespace ecs
 		Archetype archetype;
 		Chunk* nextchunk;
 		Chunk* lastchunk;
-		Chunk* groupnext;
+		Chunk* groupnext = nullptr;
 	};
 
 	// chunkを連結して仮想的な配列アクセスを提供する
@@ -54,28 +54,140 @@ namespace ecs
 	struct ComponentArray
 	{
 		ComponentArray()
-		{}
-		
-		ComponentArray(T* p, int size)
 		{
-			this->p = p;
-			this->size = size;
+			componentIndex = T::Info().Index;
+			this->componentLength = 0;
+		}
+		
+		ComponentArray(Chunk* chunk, int length)
+		{
+			componentIndex = T::Info().Index;
+			this->chunk = chunk;
+			this->componentLength = length;
+			cache_comopnent_head = (static_cast<T*>(chunk->headLut[componentIndex]));
+			cache_length = chunk->length;
 		}
 
 		T& operator[](int i)
 		{
-			return p[i];
+			// 逐次アクセスにはキャッシュを使う
+			if (cache_enable_index == i)
+			{
+				// 次のアクセスにキャッシュが効くなら
+				if (cache_offset + cache_length > i + 1)
+				{
+					cache_enable_index = i + 1;
+				}
+				return cache_comopnent_head[i - cache_offset];
+			}
+
+			int start = 0;
+			Chunk* head = chunk;
+			do
+			{
+				if (start + head->length > i && start >= i)
+				{
+					if (start + head->length > i + 1)
+					{
+						cache_offset = start;
+						cache_length = head->length;
+						cache_comopnent_head = (static_cast<T*>(head->headLut[componentIndex]));
+						cache_enable_index = i + 1;
+					}
+
+					return (static_cast<T*>(head->headLut[componentIndex]))[i - start];
+				}
+				start += chunk->length;
+				head = chunk->groupnext;
+
+			} while (head != nullptr);
+
+			return (static_cast<T*>(chunk->headLut[componentIndex]))[0];
 		}
 
 		int length() const
 		{
-			return size;
+			return this->componentLength;
 		}
 		
 	private:
-		T* p;
-		int size;
+		Chunk* chunk;
+		int componentLength;
+		int componentIndex;
 
+		int cache_offset = 0;
+		int cache_length = 0;
+		int cache_enable_index = 0;
+		T* cache_comopnent_head;
+	};
+
+
+	template<>
+	struct ComponentArray<Entity>
+	{
+		ComponentArray()
+		{
+			this->componentLength = 0;
+		}
+
+		ComponentArray(Chunk* chunk, int length)
+		{
+			this->chunk = chunk;
+			this->componentLength = length;
+			cache_comopnent_head = chunk->entities;
+			cache_length = chunk->length;
+		}
+
+		Entity& operator[](int i)
+		{
+			// 逐次アクセスにはキャッシュを使う
+			if (cache_enable_index == i)
+			{
+				// 次のアクセスにキャッシュが効くなら
+				if (cache_offset + cache_length > i + 1)
+				{
+					cache_enable_index = i + 1;
+				}
+				return cache_comopnent_head[i - cache_offset];
+			}
+
+			int start = 0;
+			Chunk* head = chunk;
+			do
+			{
+				if (start + head->length > i && start >= i)
+				{
+					if (start + head->length > i + 1)
+					{
+						cache_offset = start;
+						cache_length = head->length;
+						cache_comopnent_head = head->entities;
+						cache_enable_index = i + 1;
+					}
+
+					return head->entities[i - start];
+				}
+				start += chunk->length;
+				head = chunk->groupnext;
+
+			} while (head != nullptr);
+
+			return chunk->entities[0];
+		}
+
+		int length() const
+		{
+			return this->componentLength;
+		}
+
+	private:
+		Chunk * chunk;
+		int componentLength;
+
+		int cache_offset = 0;
+		int cache_length = 0;
+		int cache_enable_index = 0;
+		Entity* cache_comopnent_head;
 	};
 
 	struct ComponentGroup
@@ -89,17 +201,17 @@ namespace ecs
 			{
 				if ((chunks[i].archetype & filter) == filter)
 				{
-					if (top == nullptr)
+					if (head == nullptr)
 					{
-						chunk = &chunks[i];
-						head = chunk;
+						head = chunk = &chunks[i];
 					}
 					else
 					{
 						head->groupnext = &chunks[i];
 						head = head->groupnext;
 					}
-					length += chunk->length;
+
+					length += head->length;
 				}
 			}
 			this->length = length;
@@ -112,24 +224,18 @@ namespace ecs
 
 		ComponentArray<Entity> GetEntityArray() const
 		{
-			Entity* entity = chunk->entities;
-
-			ComponentArray<Entity> array(entity, chunk->length);
+			ComponentArray<Entity> array(chunk, length);
 			return array;
 		}
 
 		template<class T>
 		ComponentArray<T> GetComponentArray() const
 		{
-			// TODO chunk中のコンポーネントを連結したlistを返す
-			T* entity = gethead<T>(chunk);
-
-			ComponentArray<T> array(entity, chunk->length);
-			return array;
+			return ComponentArray<T>(chunk, length);
 		}
 
 	private:
-		Chunk* chunk;
+		Chunk* chunk;	// chunk list
 		int length;
 
 		template<class T>
@@ -290,29 +396,33 @@ namespace ecs
 		void free(Entity entity)
 		{
 			assert(m_entityLut.count(entity.Id) > 0);
-			
-			int chunkindex = 0;
-			Chunk* chunk = m_chunkman[chunkindex].lastchunk;
 
 			int index = m_entityLut.at(entity.Id);
+			int chunkindex = index >> 16;
+			int entityindex = index & 65535;
+
+			Chunk* src_chunk = m_chunkman[chunkindex].lastchunk;
+			Chunk* dst_chunk = &m_chunkman[chunkindex];
 			
 			// entityのindexを再配置する
-			// TODO 再配置コストが高い
+			// TODO componentの再配置コストが高い
 			for (int i=0; i<256; i++)
 			{
-				void* buffer = chunk->headLut[i];
-				if (buffer == nullptr) continue;
+				void* dst_buffer = dst_chunk->headLut[i];
+				if (dst_buffer == nullptr) continue;
 
-				int size = chunk->sizeLut[i];
-				void* src = static_cast<char*>(buffer) + (size * (chunk->length - 1));
-				void* dst = static_cast<char*>(buffer) + (size * index);
+				void* src_buffer = src_chunk->headLut[i];
+
+				int size = dst_chunk->sizeLut[i];
+				void* src = static_cast<char*>(src_buffer) + (size * (src_chunk->length - 1));
+				void* dst = static_cast<char*>(dst_buffer) + (size * entityindex);
 				memcpy(dst, src, size);
 			}
 
-			Entity lastEntity = chunk->entities[index] = chunk->entities[chunk->length - 1];
-			chunk->length--;
+			Entity lastEntity = dst_chunk->entities[entityindex] = src_chunk->entities[src_chunk->length - 1];
+			src_chunk->length--;
 
-			m_entityLut[lastEntity.Id] = index;
+			m_entityLut[lastEntity.Id] = entityindex;
 			m_entityLut.erase(entity.Id);
 		}
 
