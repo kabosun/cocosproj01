@@ -15,8 +15,6 @@
 
 namespace ecs
 {
-	using Filter = Archetype;
-	
 	struct Chunk
 	{
 		static const int chunksize = 64 * 1024;
@@ -269,7 +267,12 @@ namespace ecs
 		
 	public:
 		
-		void Init(int maxSize = 4 * 1024 * 1024/* 4M */)
+		virtual ~ComponentAllocator()
+		{
+			release();
+		}
+		
+		void init(int maxSize = 4 * 1024 * 1024/* 4M */)
 		{
 			assert(m_buffer == nullptr);
 			m_buffer = operator new (maxSize);
@@ -293,41 +296,12 @@ namespace ecs
 			log("chunk (size:%zu) count:%d", sizeof(Chunk), m_totalchunkcount);
 		}
 		
-		void destroy()
+		void release()
 		{
 			if (m_buffer)
 			{
 				operator delete (m_buffer);
 			}
-		}
-		
-		virtual ~ComponentAllocator()
-		{
-			destroy();
-		}
-		
-		int gethandle(Entity entity) const
-		{
-			assert(m_entityLut.count(entity.Id) != 0);
-			return m_entityLut.at(entity.Id);
-		}
-		
-		template<class T>
-		T* gethead(int chunkindex=0) const
-		{
-			assert(chunkindex >= 0 && m_totalchunkcount > chunkindex);
-
-			const Chunk* chunk = &m_chunkman[chunkindex];
-
-			return static_cast<T*>(chunk->headLut[T::Index]);
-		}
-		
-		Entity* getentity(int chunkindex=0) const
-		{
-			assert(chunkindex >= 0 && m_totalchunkcount > chunkindex);
-			
-			const Chunk* chunk = &m_chunkman[chunkindex];
-			return chunk->entities;
 		}
 		
 		void allocatechunk(Archetype archetype, std::vector<ComponentInfo> list)
@@ -360,33 +334,12 @@ namespace ecs
 			
 			Chunk* chunk = &m_chunkman[chunkindex];
 			
-			void* p = getcomponent(chunk, T::Index);
+			void* p = chunk->headLut[T::Index];
 			T* components = static_cast<T*>(p);
 			
 			new(&components[entityindex])T(args...);
 		}
-		
-		template<class T, typename... Args>
-		void alloc(Entity entity, Args&&... args)
-		{
-			// chunkがなければ空きchunkにメモリを割り当てる
-			Chunk* chunk = &m_chunkman[0];
-			
-			// componentがなければ割り当てる
-			void* p = get_or_alloc_compnent(chunk, T::Index, sizeof(T));
-			T* components = static_cast<T*>(p);
 
-			if (m_entityLut.count(entity.Id) == 0)
-			{
-				m_entityLut[entity.Id] = chunk->length;
-				chunk->entities[chunk->length] = entity;
-				chunk->length++;
-			}
-
-			int index = m_entityLut.at(entity.Id);
-			new(&components[index])T(args...);
-		}
-		
 		void free(Entity entity)
 		{
 			assert(m_entityLut.count(entity.Id) > 0);
@@ -476,11 +429,6 @@ namespace ecs
 				chunk->useSize += (componentsize * chunk->maxlength);
 			}
 			return chunk->headLut[componentHandle];
-		}
-		
-		void* getcomponent(Chunk* chunk, int index) const
-		{
-			return chunk->headLut[index];
 		}
 	};
 }

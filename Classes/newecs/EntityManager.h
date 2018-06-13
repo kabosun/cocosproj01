@@ -29,7 +29,7 @@ namespace ecs
 		
 		void Init()
 		{
-			m_allocator.Init();
+			m_allocator.init();
 		}
 		
 		template<typename... Args>
@@ -37,20 +37,20 @@ namespace ecs
 		{
 			std::vector<ComponentInfo> list = {args...};
 			
-			Archetype a;
+			Archetype archetype;
 			for (ComponentInfo& info : list)
 			{
-				a.set(info.Index);
+				archetype.set(info.Index);
 			}
 			
 			// chunkの生成
-			m_allocator.allocatechunk(a, list);
+			m_allocator.allocatechunk(archetype, list);
 			
-			return a;
+			return archetype;
 		}
 
 		template<typename... Args>
-		Filter CreateFilter(Args... args)
+		static Filter CreateFilter(Args... args)
 		{
 			std::vector<ComponentInfo> list = { args... };
 
@@ -64,21 +64,12 @@ namespace ecs
 		}
 		
 		Entity CreateEntity();
-		Entity CreateEntity(Archetype archetype);
+		Entity CreateEntity(const Archetype& archetype);
 		
 		template<class T, typename... Args>
 		void AssignComponent(Entity entity, Args&&... args)
 		{
 			m_allocator.assign<T>(entity, args...);
-		}
-		
-		template<class T>
-		T* GetComponent(Entity entity) const
-		{
-			T* components = m_allocator.gethead<T>();
-			
-			int index = m_allocator.gethandle(entity);
-			return &components[index];
 		}
 		
 		ComponentGroup GetComponentGroup(const Archetype& archetype) const
@@ -111,7 +102,7 @@ namespace ecs
 		void GC();
 		
 	private:
-		void InitSystem(System * system);
+		void InitSystem(System* system);
 	};
 	
 }

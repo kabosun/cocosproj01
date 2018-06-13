@@ -29,7 +29,7 @@ namespace ecs
 		return Entity::Make(index, m_Generation[index]);
 	}
 	
-	Entity EntityManager::CreateEntity(Archetype archetype)
+	Entity EntityManager::CreateEntity(const Archetype& archetype)
 	{
 		Entity entity = CreateEntity();
 		

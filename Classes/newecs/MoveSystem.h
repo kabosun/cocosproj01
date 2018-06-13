@@ -6,7 +6,7 @@ using namespace ecs;
 
 class MoveSystem : public System
 {
-	Filter filter;
+	Filter filter = EntityManager::CreateFilter(Position::Info(), Lifetime::Info(), Monster::Info());
 	int Length = 0;
 	ComponentArray<Entity> m_Entity;
 	ComponentArray<Position> m_Position;

@@ -13,7 +13,7 @@ void NewECSSample::Init()
 	log("archetype1: %zu", archetype1.to_ulong());
 	log("archetype1: %s", archetype1.to_string().c_str());
 
-	Archetype archetype2 = manager.CreateArchetype(Position::Info(), Lifetime::Info());
+	Archetype archetype2 = manager.CreateArchetype(Position::Info(), Lifetime::Info(), Monster::Info());
 	log("archetype2: %zu", archetype2.to_ulong());
 	log("archetype2: %s", archetype2.to_string().c_str());
 	

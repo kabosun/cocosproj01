@@ -3,7 +3,6 @@
 
 void MoveSystem::Init(EntityManager* manager)
 {
-	filter = manager->CreateFilter(Position::Info(), Lifetime::Info(), Monster::Info());
 }
 
 void MoveSystem::AssignComponent(ecs::EntityManager* manager)
