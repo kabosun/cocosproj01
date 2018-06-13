@@ -15,6 +15,8 @@
 
 namespace ecs
 {
+	using Filter = Archetype;
+	
 	struct Chunk
 	{
 		static const int chunksize = 64 * 1024;
@@ -40,18 +42,20 @@ namespace ecs
 			length++;
 			return length - 1;
 		}
-
+		
+		Archetype archetype;
 		Chunk* nextchunk;
 		Chunk* lastchunk;
+		Chunk* groupnext;
 	};
 
 	// chunkを連結して仮想的な配列アクセスを提供する
 	template<class T>
 	struct ComponentArray
 	{
-		T* p;
-		int size;
-
+		ComponentArray()
+		{}
+		
 		ComponentArray(T* p, int size)
 		{
 			this->p = p;
@@ -67,24 +71,47 @@ namespace ecs
 		{
 			return size;
 		}
+		
+	private:
+		T* p;
+		int size;
+
 	};
 
-	struct ComponentPack
+	struct ComponentGroup
 	{
-		ComponentPack(Chunk* chunk)
+		ComponentGroup(const Filter& filter, Chunk* chunks, int chunksize)
 		{
-			chunks.push_back(chunk);
+			Chunk* head = nullptr;
+			int length = 0;
+			
+			for (int i=0; i<chunksize; i++)
+			{
+				if ((chunks[i].archetype & filter) == filter)
+				{
+					if (top == nullptr)
+					{
+						chunk = &chunks[i];
+						head = chunk;
+					}
+					else
+					{
+						head->groupnext = &chunks[i];
+						head = head->groupnext;
+					}
+					length += chunk->length;
+				}
+			}
+			this->length = length;
 		}
 
 		int Length() const
 		{
-			return chunks.front()->length;
+			return length;
 		}
 
 		ComponentArray<Entity> GetEntityArray() const
 		{
-			Chunk* chunk = chunks.front();
-
 			Entity* entity = chunk->entities;
 
 			ComponentArray<Entity> array(entity, chunk->length);
@@ -95,8 +122,6 @@ namespace ecs
 		ComponentArray<T> GetComponentArray() const
 		{
 			// TODO chunk中のコンポーネントを連結したlistを返す
-			Chunk* chunk = chunks.front();
-
 			T* entity = gethead<T>(chunk);
 
 			ComponentArray<T> array(entity, chunk->length);
@@ -104,7 +129,8 @@ namespace ecs
 		}
 
 	private:
-		std::list<Chunk*> chunks;	// フィルタリング済みのchunk
+		Chunk* chunk;
+		int length;
 
 		template<class T>
 		T* gethead(const Chunk* chunk) const
@@ -290,12 +316,10 @@ namespace ecs
 			m_entityLut.erase(entity.Id);
 		}
 
-		ComponentPack getcomponentpack(const Archetype& archetype) const
+		ComponentGroup getcomponentgroup(const Archetype& archetype) const
 		{
-			Chunk* chunk = m_chunkman[m_ArchetypeChunkLut.at(archetype)].lastchunk;
-
-			ComponentPack pack(chunk);
-			return pack;
+			ComponentGroup group(archetype, m_chunkman, m_usechunkcount);
+			return group;
 		}
 
 	private:
@@ -304,6 +328,7 @@ namespace ecs
 		{
 			if (m_ArchetypeChunkLut.count(archetype) > 0)
 			{
+				// TODO chunk内がいっぱいになったら新しいchunkを作る
 				return m_chunkman[m_ArchetypeChunkLut.at(archetype)].lastchunk;
 			}
 			
@@ -312,6 +337,7 @@ namespace ecs
 			chunk->head = m_head;
 			m_head = static_cast<char*>(m_head) + Chunk::chunksize;
 			m_usesize += Chunk::chunksize;
+			chunk->archetype = archetype;
 			chunk->nextchunk = chunk;
 			chunk->lastchunk = chunk;
 			

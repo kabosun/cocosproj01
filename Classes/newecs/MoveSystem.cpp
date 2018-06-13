@@ -4,12 +4,12 @@
 void MoveSystem::AssignComponent(ecs::EntityManager* manager)
 {
 	Archetype filter = manager->CreateFilter(Position::Info(), Lifetime::Info());
-	ComponentPack components = manager->GetComponentPack(filter);
+	ComponentGroup componentGroup = manager->GetComponentGroup(filter);
 
-	Length = components.Length();
-	m_Entity = components.GetEntityArray();
-	m_Position = components.GetComponentArray<Position>();
-	m_Lifetime = components.GetComponentArray<Lifetime>();
+	Length = componentGroup.Length();
+	m_Entity = componentGroup.GetEntityArray();
+	m_Position = componentGroup.GetComponentArray<Position>();
+	m_Lifetime = componentGroup.GetComponentArray<Lifetime>();
 }
 
 void MoveSystem::Update(ecs::EntityManager* manager, float delta)

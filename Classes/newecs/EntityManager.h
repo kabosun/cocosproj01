@@ -81,9 +81,9 @@ namespace ecs
 			return &components[index];
 		}
 		
-		ComponentPack GetComponentPack(const Archetype& archetype) const
+		ComponentGroup GetComponentGroup(const Archetype& archetype) const
 		{
-			return m_allocator.getcomponentpack(archetype);
+			return m_allocator.getcomponentgroup(archetype);
 		}
 		
 		/**
