@@ -35,6 +35,8 @@ void NewECSSample::Init()
 
 		manager.AssignComponent<Position>(entity, 200 + i, 250 + i);
 		manager.AssignComponent<Lifetime>(entity, 3 + i);
+
+		manager.UnassignComponent<Lifetime>(entity);
 	}
 	
 	manager.RemoveEntity(list[0]);

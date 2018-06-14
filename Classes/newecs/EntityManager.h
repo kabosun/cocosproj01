@@ -71,6 +71,12 @@ namespace ecs
 		{
 			m_allocator.assign<T>(entity, args...);
 		}
+
+		template<class T>
+		void UnassignComponent(Entity entity)
+		{
+			m_allocator.unassign<T>(entity);
+		}
 		
 		ComponentGroup GetComponentGroup(const Archetype& archetype) const
 		{

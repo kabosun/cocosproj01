@@ -319,10 +319,16 @@ namespace ecs
 		{
 			int chunkindex = m_ArchetypeChunkLut.at(archetype);
 			Chunk* chunk = m_chunkman[chunkindex].lastchunk;
-			
-			int index = chunk->add(entity);
-			
-			m_entityLut[entity.Id] = (chunkindex << 16) | index;
+
+			if (chunk->length < chunk->maxlength)
+			{
+				int index = chunk->add(entity);
+				m_entityLut[entity.Id] = (chunkindex << 16) | index;
+				return;
+			}
+
+			// TODO: chunkに空きがないので新しいchunkを割り当てる
+			assert(false);
 		}
 		
 		template<class T, typename... Args>
@@ -333,11 +339,52 @@ namespace ecs
 			int entityindex = index & 65535;
 			
 			Chunk* chunk = &m_chunkman[chunkindex];
-			
-			void* p = chunk->headLut[T::Index];
-			T* components = static_cast<T*>(p);
-			
-			new(&components[entityindex])T(args...);
+
+			if (chunk->archetype[T::Index])
+			{
+				void* p = chunk->headLut[T::Index];
+				T* components = static_cast<T*>(p);
+
+				new(&components[entityindex])T(args...);
+				return;
+			}
+
+			// TODO: archetypeに含まれないcomponetの場合はchunkを移動する
+			assert(false);
+		}
+
+		template<class T>
+		void unassign(Entity entity)
+		{
+			// archetypeが変わるのでchunkを移動する
+			int index = m_entityLut.at(entity.Id);
+			int chunkindex = index >> 16;
+			int entityindex = index & 65535;
+
+			Chunk* chunk = &m_chunkman[chunkindex];
+			Archetype newarchetype = chunk->archetype;
+			newarchetype.reset(T::Index);
+
+			if (m_ArchetypeChunkLut.count(newarchetype) > 0)
+			{
+				int oldindex = m_entityLut.at(entity.Id);
+				int oldchunkindex = oldindex >> 16;
+				int oldentityindex = oldindex & 65535;
+
+				allocateentity(entity, newarchetype);
+				// TODO: componentをコピーする
+
+				int index = m_entityLut.at(entity.Id);
+				int chunkindex = index >> 16;
+				int entityindex = index & 65535;
+
+				Chunk* src_chunk = m_chunkman[oldchunkindex].lastchunk;
+				Chunk* dst_chunk = &m_chunkman[chunkindex];
+				componentcopy(dst_chunk, src_chunk, oldentityindex);
+			}
+
+			// TODO: chunkがない場合は新しいchunkを割り当てる
+			assert(false);
 		}
 
 		void free(Entity entity)
@@ -353,7 +400,7 @@ namespace ecs
 			
 			// entityのindexを再配置する
 			// TODO componentの再配置コストが高い
-			for (int i=0; i<256; i++)
+			/*for (int i=0; i<256; i++)
 			{
 				void* dst_buffer = dst_chunk->headLut[i];
 				if (dst_buffer == nullptr) continue;
@@ -364,7 +411,8 @@ namespace ecs
 				void* src = static_cast<char*>(src_buffer) + (size * (src_chunk->length - 1));
 				void* dst = static_cast<char*>(dst_buffer) + (size * entityindex);
 				memcpy(dst, src, size);
-			}
+			}*/
+			componentcopy(dst_chunk, src_chunk, entityindex);
 
 			Entity lastEntity = dst_chunk->entities[entityindex] = src_chunk->entities[src_chunk->length - 1];
 			src_chunk->length--;
@@ -429,6 +477,22 @@ namespace ecs
 				chunk->useSize += (componentsize * chunk->maxlength);
 			}
 			return chunk->headLut[componentHandle];
+		}
+
+		void componentcopy(Chunk* dst_chunk, Chunk* src_chunk, int entityindex)
+		{
+			for (int i = 0; i<256; i++)
+			{
+				void* dst_buffer = dst_chunk->headLut[i];
+				if (dst_buffer == nullptr) continue;	// コピー先が有効なものだけコピーする
+
+				void* src_buffer = src_chunk->headLut[i];
+
+				int size = dst_chunk->sizeLut[i];
+				void* src = static_cast<char*>(src_buffer) + (size * (src_chunk->length - 1));
+				void* dst = static_cast<char*>(dst_buffer) + (size * entityindex);
+				memcpy(dst, src, size);
+			}
 		}
 	};
 }
